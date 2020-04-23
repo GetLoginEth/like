@@ -1,11 +1,12 @@
 pragma solidity ^0.6.4;
+pragma experimental ABIEncoderV2;
 
 contract LikeStorage {
     address public logicAddress;
     uint public newResourceId = 1;
-    ResourceType[] public resources;
+    mapping(uint => ResourceType) public resources;
     // todo emit event when resource created (for fast find with web3)
-    mapping(bytes32 => ResourceTypeStatistics) public resourceTypeStatistics;
+    //mapping(bytes32 => ResourceTypeStatistics) public resourceTypeStatistics;
     mapping(bytes32 => ResourceIdStatistics) public resourceIdStatistics;
 
     struct ResourceType {
@@ -13,27 +14,22 @@ contract LikeStorage {
         string title;
         string description;
         string url;
-        bool isActive;
-    }
-
-    struct ResourceTypeStatistics {
-        uint resourceTypeId;
-        uint likes;
+        uint reactions;
         uint donates;
         bool isActive;
     }
 
     struct ResourceIdStatistics {
         uint resourceTypeId;
-        uint resourceId;
-        uint likes;
+        bytes32 resourceIdHash;
+        uint reactions;
         uint donates;
         bool isActive;
     }
 
     struct Like {
         uint resourceType;
-        string resourceId;
+        bytes32 resourceIdHash;
         bytes32 usernameHash;
         uint8 typeId;
         string data;
@@ -46,5 +42,29 @@ contract LikeStorage {
 
     function setLogicAddress(address _logicAddress) public {
         logicAddress = _logicAddress;
+    }
+
+    function setResourceIdStatistics(bytes32 key, ResourceIdStatistics memory value) public {
+        resourceIdStatistics[key] = value;
+    }
+
+    function getResourceIdStatistics(bytes32 key) public view returns (ResourceIdStatistics memory) {
+        return resourceIdStatistics[key];
+    }
+
+    /*function setResourceTypeStatistics(bytes32 key, ResourceTypeStatistics memory value) public {
+        resourceTypeStatistics[key] = value;
+    }
+
+    function getResourceTypeStatistics(bytes32 key) public view returns (ResourceTypeStatistics memory) {
+        return resourceTypeStatistics[key];
+    }*/
+
+    function setResourceType(uint key, ResourceType memory value) public {
+        resources[key] = value;
+    }
+
+    function getResourceType(uint key) public view returns (ResourceType memory) {
+        return resources[key];
     }
 }
