@@ -45,6 +45,8 @@ contract LikeLogic {
 
     }
 
+    /* Public methods */
+
     function setLikeStorage(LikeStorage _storageAddress) onlyOwner public {
         _setLikeStorage(_storageAddress);
     }
@@ -57,26 +59,39 @@ contract LikeLogic {
         _setOwner(_address);
     }
 
-    function like(string memory url) public {
+    function like(string memory url, address payable donateAddress) payable public {
         // todo create/find resource by url
         //_like();
 
         //keccak256("raw_start_"+url+"_end")
     }
 
-    function like(uint resourceTypeId, bytes32 resourceIdHash) public {
+    function createResourceType(LikeStorage.ResourceType memory resource) public {
+        uint id = likeStorage.newResourceId();
+        likeStorage.setResourceType(id, resource);
+    }
+
+    function like(uint resourceTypeId, bytes32 resourceIdHash, address payable donateAddress) payable public {
         LikeStorage.ResourceType memory resourceType = validateGetResourceType(resourceTypeId);
 
-        // todo calc donations
+        // set resource id stata
         bytes32 resourceIdKey = keccak256(abi.encode("structured_start_", resourceTypeId, "_", resourceIdHash, "_end"));
         LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
         resourceIdStatistics.resourceTypeId = resourceTypeId;
         resourceIdStatistics.reactions++;
+        resourceIdStatistics.donates += msg.value;
         resourceIdStatistics.resourceIdHash = resourceIdHash;
         likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
 
+        // set resource stata
+        resourceType.donates += msg.value;
         resourceType.reactions++;
         likeStorage.setResourceType(resourceTypeId, resourceType);
+
+        // send donation
+        if (msg.value > 0 && donateAddress != address(0)) {
+            donateAddress.transfer(msg.value);
+        }
     }
 
     function unlike() public {
