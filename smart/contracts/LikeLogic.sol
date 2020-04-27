@@ -16,8 +16,8 @@ contract LikeLogic {
     GetLoginStorage public GLStorage;
     address public owner;
 
-    constructor(LikeStorage _likeStorageAddress, GetLoginStorage _GLStorage) public {
-        _setLikeStorage(_likeStorageAddress);
+    constructor(LikeStorage _likeStorage, GetLoginStorage _GLStorage) public {
+        _setLikeStorage(_likeStorage);
         _setOwner(msg.sender);
         _setGLStorage(_GLStorage);
         // todo init storage if needed
@@ -41,11 +41,14 @@ contract LikeLogic {
     }
 
     function _like(uint resourceTypeId, uint resourceId) private {
-        bytes32 usernameHash = GetLoginLogic(GLStorage.logicAddress()).getUsernameByAddress(msg.sender);
-
+        //bytes32 usernameHash = getGLUsernameHash(msg.sender);
     }
 
     /* Public methods */
+
+    function getGLUsernameHash(address _address) public view returns (bytes32){
+        return GetLoginLogic(GLStorage.logicAddress()).getUsernameByAddress(_address);
+    }
 
     function setLikeStorage(LikeStorage _storageAddress) onlyOwner public {
         _setLikeStorage(_storageAddress);
@@ -66,9 +69,22 @@ contract LikeLogic {
         //keccak256("raw_start_"+url+"_end")
     }
 
-    function createResourceType(LikeStorage.ResourceType memory resource) public {
+    function createResourceType(string memory title, string memory description, string memory url) public {
+        bytes32 ownerUsernameHash = getGLUsernameHash(msg.sender);
         uint id = likeStorage.newResourceId();
+        LikeStorage.ResourceType memory resource = LikeStorage.ResourceType({
+            id : id,
+            title : title,
+            description : description,
+            url : url,
+            reactions : 0,
+            donates : 0,
+            ownerUsernameHash : ownerUsernameHash,
+            isActive : true
+            });
+
         likeStorage.setResourceType(id, resource);
+        likeStorage.incrementResourceId();
     }
 
     function like(uint resourceTypeId, bytes32 resourceIdHash, address payable donateAddress) payable public {

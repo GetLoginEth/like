@@ -87,4 +87,8 @@ contract LikeStorage {
     function incrementResourceId() onlyLogicAddress public {
         newResourceId++;
     }
+
+    function decrementResourceId() onlyLogicAddress public {
+        newResourceId--;
+    }
 }

@@ -13,18 +13,30 @@ contract("Like", async accounts => {
             likeLogic = await LikeLogic.deployed();
             likeStorage = await LikeStorage.deployed();
 
-            /*await getLoginStorage.setLogicAddress(getLoginLogic.address);
-            await getLoginLogic.init();(/
+            await likeStorage.setLogicAddress(likeLogic.address);
+            //await getLoginLogic.init();
 
         });
 
-        beforeEach(async () => {
-            /*getLoginLogic = await GetLoginLogic.deployed();
-            getLoginStorage = await GetLoginStorage.deployed();*/
-        });
+        //beforeEach(async () => {
+        /*getLoginLogic = await GetLoginLogic.deployed();
+        getLoginStorage = await GetLoginStorage.deployed();*/
+        //});
 
-        it("Like without donate", async () => {
-            //await likeLogic.like();
+        it("Create resource type", async () => {
+            const resource = {
+                title: "YouTube",
+                description: "YouTube description here",
+                url: "https://youtube.com",
+            };
+            await likeLogic.createResourceType(resource.title, resource.description, resource.url);
+
+            const data = await likeStorage.getResourceType(1);
+            assert.equal(data.id, 1, "Incorrect id");
+            assert.equal(data.title, resource.title, "Incorrect title");
+            assert.equal(data.description, resource.description, "Incorrect description");
+            assert.equal(data.url, resource.url, "Incorrect url");
+
         });
 
         it("Like without donate", async () => {

@@ -15,7 +15,7 @@ module.exports = function (deployer) {
             getLoginStorageAddress = data.address;
             return data;
         })
-        .then(data => deployer.deploy(GetLoginLogic, getLoginStorageAddress))
+        .then(_ => deployer.deploy(GetLoginLogic, getLoginStorageAddress))
         .then(data => {
             getLoginLogicAddress = data.address;
 
@@ -23,8 +23,8 @@ module.exports = function (deployer) {
         })
         .then(getLoginLogicAddress => getLoginStorage.setLogicAddress(getLoginLogicAddress))
         .then(_ => deployer.deploy(LikeStorage))
-        .then(data => deployer.deploy(LikeLogic, data.address, getLoginStorageAddress));
+        .then(likeStorage => deployer.deploy(LikeLogic, likeStorage.address, getLoginStorageAddress));
 
-    deployer.deploy(Empty);
-    deployer.deploy(TestLogic);
+    //deployer.deploy(Empty);
+    //deployer.deploy(TestLogic);
 };
