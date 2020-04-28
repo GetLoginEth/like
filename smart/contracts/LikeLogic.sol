@@ -46,10 +46,6 @@ contract LikeLogic {
 
     /* Public methods */
 
-    function getGLUsernameHash(address _address) public view returns (bytes32){
-        return GetLoginLogic(GLStorage.logicAddress()).getUsernameByAddress(_address);
-    }
-
     function setLikeStorage(LikeStorage _storageAddress) onlyOwner public {
         _setLikeStorage(_storageAddress);
     }
@@ -66,7 +62,11 @@ contract LikeLogic {
         // todo create/find resource by url
         //_like();
 
+        /*if(msg.value > 0 && donateAddress != address(0)) {
+            donateAddress.send(msg.value);
+        }*/
         //keccak256("raw_start_"+url+"_end")
+
     }
 
     function createResourceType(string memory title, string memory description, string memory url) public {
@@ -91,12 +91,13 @@ contract LikeLogic {
         LikeStorage.ResourceType memory resourceType = validateGetResourceType(resourceTypeId);
 
         // set resource id stata
-        bytes32 resourceIdKey = keccak256(abi.encode("structured_start_", resourceTypeId, "_", resourceIdHash, "_end"));
+        bytes32 resourceIdKey = getResourceIdKey(resourceTypeId, resourceIdHash);
         LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
         resourceIdStatistics.resourceTypeId = resourceTypeId;
         resourceIdStatistics.reactions++;
         resourceIdStatistics.donates += msg.value;
         resourceIdStatistics.resourceIdHash = resourceIdHash;
+        resourceIdStatistics.isActive = true;
         likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
 
         // set resource stata
@@ -110,8 +111,31 @@ contract LikeLogic {
         }
     }
 
-    function unlike() public {
+    function unlike(uint resourceTypeId, bytes32 resourceIdHash) public {
         // todo check if user can unlike content
+        bytes32 resourceIdKey = getResourceIdKey(resourceTypeId, resourceIdHash);
+        LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
+        resourceIdStatistics.resourceTypeId = resourceTypeId;
+        resourceIdStatistics.reactions--;
+        resourceIdStatistics.resourceIdHash = resourceIdHash;
+        resourceIdStatistics.isActive = true;
+        likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
+    }
+
+    /* Getters */
+
+    function getResourceIdKey(uint resourceTypeId, bytes32 resourceIdHash) public view returns (bytes32){
+        return keccak256(abi.encode("structured_start_", resourceTypeId, "_", resourceIdHash, "_end"));
+    }
+
+    function getGLUsernameHash(address _address) public view returns (bytes32){
+        return GetLoginLogic(GLStorage.logicAddress()).getUsernameByAddress(_address);
+    }
+
+    function getResourceIdStatistics(uint resourceTypeId, bytes32 resourceIdHash) public view returns (LikeStorage.ResourceIdStatistics memory){
+        bytes32 key = getResourceIdKey(resourceTypeId, resourceIdHash);
+
+        return likeStorage.getResourceIdStatistics(key);
     }
 
     /* Validators */
