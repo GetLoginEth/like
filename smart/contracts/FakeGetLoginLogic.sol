@@ -15,6 +15,7 @@ contract GetLoginLogic {
 
     /* GetLoginLogic methods */
     function getUsernameByAddress(address wallet) public view returns (bytes32){
+        require(addresses[wallet][0] != 0, "User with this address not found");
         return addresses[wallet];
     }
 }

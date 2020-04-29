@@ -58,17 +58,6 @@ contract LikeLogic {
         _setOwner(_address);
     }
 
-    function like(string memory url, address payable donateAddress) payable public {
-        // todo create/find resource by url
-        //_like();
-
-        /*if(msg.value > 0 && donateAddress != address(0)) {
-            donateAddress.send(msg.value);
-        }*/
-        //keccak256("raw_start_"+url+"_end")
-
-    }
-
     function createResourceType(string memory title, string memory description, string memory url) public {
         bytes32 ownerUsernameHash = getGLUsernameHash(msg.sender);
         uint id = likeStorage.newResourceId();
@@ -89,9 +78,12 @@ contract LikeLogic {
 
     function like(uint resourceTypeId, bytes32 resourceIdHash, address payable donateAddress) payable public {
         LikeStorage.ResourceType memory resourceType = validateGetResourceType(resourceTypeId);
+        bytes32 usernameHash = getGLUsernameHash(msg.sender);
 
         // set resource id stata
         bytes32 resourceIdKey = getResourceIdKey(resourceTypeId, resourceIdHash);
+        bytes32 userLikeKey = getUserLikeKey(usernameHash, resourceTypeId, resourceIdHash);
+        require(likeStorage.getUserLike(userLikeKey) == false, "Already liked");
         LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
         resourceIdStatistics.resourceTypeId = resourceTypeId;
         resourceIdStatistics.reactions++;
@@ -99,6 +91,9 @@ contract LikeLogic {
         resourceIdStatistics.resourceIdHash = resourceIdHash;
         resourceIdStatistics.isActive = true;
         likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
+
+        // set user like to prevent double like
+        likeStorage.setUserLike(userLikeKey, true);
 
         // set resource stata
         resourceType.donates += msg.value;
@@ -111,9 +106,24 @@ contract LikeLogic {
         }
     }
 
+    function likeUrl(string memory url, address payable donateAddress) payable public {
+        // todo create/find resource by url
+        //_like();
+
+        /*if(msg.value > 0 && donateAddress != address(0)) {
+            donateAddress.send(msg.value);
+        }*/
+        //keccak256("raw_start_"+url+"_end")
+
+    }
+
     function unlike(uint resourceTypeId, bytes32 resourceIdHash) public {
-        // todo check if user can unlike content
+        LikeStorage.ResourceType memory resourceType = validateGetResourceType(resourceTypeId);
+        bytes32 usernameHash = getGLUsernameHash(msg.sender);
+
         bytes32 resourceIdKey = getResourceIdKey(resourceTypeId, resourceIdHash);
+        bytes32 userLikeKey = getUserLikeKey(usernameHash, resourceTypeId, resourceIdHash);
+        require(likeStorage.getUserLike(userLikeKey), "User not liked this content");
         LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
         resourceIdStatistics.resourceTypeId = resourceTypeId;
         resourceIdStatistics.reactions--;
@@ -123,6 +133,10 @@ contract LikeLogic {
     }
 
     /* Getters */
+
+    function getUserLikeKey(bytes32 usernameHash, uint resourceTypeId, bytes32 resourceIdHash) public view returns (bytes32){
+        return keccak256(abi.encode("user_like_", usernameHash, "_", resourceTypeId, "_", resourceIdHash, "_end"));
+    }
 
     function getResourceIdKey(uint resourceTypeId, bytes32 resourceIdHash) public view returns (bytes32){
         return keccak256(abi.encode("structured_start_", resourceTypeId, "_", resourceIdHash, "_end"));

@@ -9,6 +9,7 @@ contract LikeStorage {
     // todo emit event when resource created (for fast find with web3)
     //mapping(bytes32 => ResourceTypeStatistics) public resourceTypeStatistics;
     mapping(bytes32 => ResourceIdStatistics) public resourceIdStatistics;
+    mapping(bytes32 => bool) public userLike;
 
     struct ResourceType {
         uint id;
@@ -29,14 +30,14 @@ contract LikeStorage {
         bool isActive;
     }
 
-    struct Like {
+    /*struct Like {
         uint resourceType;
         bytes32 resourceIdHash;
         bytes32 usernameHash;
         uint8 typeId;
         string data;
         bool isActive;
-    }
+    }*/
 
     constructor() public {
         owner = msg.sender;
@@ -82,6 +83,14 @@ contract LikeStorage {
 
     function getResourceType(uint key) public view returns (ResourceType memory) {
         return resources[key];
+    }
+
+    function setUserLike(bytes32 key, bool value) onlyLogicAddress public {
+        userLike[key] = value;
+    }
+
+    function getUserLike(bytes32 key) public view returns (bool) {
+        return userLike[key];
     }
 
     function incrementResourceId() onlyLogicAddress public {
