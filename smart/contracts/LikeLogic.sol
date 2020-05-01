@@ -40,8 +40,38 @@ contract LikeLogic {
         GLStorage = _storageAddress;
     }
 
-    function _like(uint resourceTypeId, uint resourceId) private {
+    /*function _like(uint resourceTypeId, uint resourceId) private {
         //bytes32 usernameHash = getGLUsernameHash(msg.sender);
+    }*/
+
+    function _incrementResourceType(uint resourceTypeId, uint donates) private {
+        LikeStorage.ResourceType memory resourceType = validateGetResourceType(resourceTypeId);
+        resourceType.donates += donates;
+        resourceType.reactions++;
+        likeStorage.setResourceType(resourceTypeId, resourceType);
+    }
+
+    function _incrementResourceId(uint resourceTypeId, bytes32 resourceIdHash, uint donate) private {
+        bytes32 resourceIdKey = getResourceIdKey(resourceTypeId, resourceIdHash);
+        LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
+        resourceIdStatistics.resourceTypeId = resourceTypeId;
+        resourceIdStatistics.reactions++;
+        resourceIdStatistics.donates += donate;
+        resourceIdStatistics.resourceIdHash = resourceIdHash;
+        resourceIdStatistics.isActive = true;
+        likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
+    }
+
+    function _preventDoubleLikeUrl(bytes32 usernameHash, bytes32 urlHash, bool result) private {
+        bytes32 userLikeKey = getUserLikeUrlKey(usernameHash, urlHash);
+        require(likeStorage.getUserLike(userLikeKey) == false, "Already liked");
+        likeStorage.setUserLike(userLikeKey, result);
+    }
+
+    function _sendDonation(uint sum, address payable _address) private {
+        if (sum > 0 && _address != address(0)) {
+            _address.transfer(msg.value);
+        }
     }
 
     /* Public methods */
@@ -77,44 +107,23 @@ contract LikeLogic {
     }
 
     function like(uint resourceTypeId, bytes32 resourceIdHash, address payable donateAddress) payable public {
-        LikeStorage.ResourceType memory resourceType = validateGetResourceType(resourceTypeId);
         bytes32 usernameHash = getGLUsernameHash(msg.sender);
-
-        // set resource id stata
-        bytes32 resourceIdKey = getResourceIdKey(resourceTypeId, resourceIdHash);
-        bytes32 userLikeKey = getUserLikeKey(usernameHash, resourceTypeId, resourceIdHash);
+        bytes32 userLikeKey = getUserLikeResourceKey(usernameHash, resourceTypeId, resourceIdHash);
         require(likeStorage.getUserLike(userLikeKey) == false, "Already liked");
-        LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
-        resourceIdStatistics.resourceTypeId = resourceTypeId;
-        resourceIdStatistics.reactions++;
-        resourceIdStatistics.donates += msg.value;
-        resourceIdStatistics.resourceIdHash = resourceIdHash;
-        resourceIdStatistics.isActive = true;
-        likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
-
-        // set user like to prevent double like
         likeStorage.setUserLike(userLikeKey, true);
 
-        // set resource stata
-        resourceType.donates += msg.value;
-        resourceType.reactions++;
-        likeStorage.setResourceType(resourceTypeId, resourceType);
-
-        // send donation
-        if (msg.value > 0 && donateAddress != address(0)) {
-            donateAddress.transfer(msg.value);
-        }
+        _incrementResourceType(resourceTypeId, msg.value);
+        _incrementResourceId(resourceTypeId, resourceIdHash, msg.value);
+        _sendDonation(msg.value, donateAddress);
     }
 
-    function likeUrl(string memory url, address payable donateAddress) payable public {
-        // todo create/find resource by url
-        //_like();
+    function likeUrl(bytes32 urlHash, address payable donateAddress) payable public {
+        bytes32 usernameHash = getGLUsernameHash(msg.sender);
 
-        /*if(msg.value > 0 && donateAddress != address(0)) {
-            donateAddress.send(msg.value);
-        }*/
-        //keccak256("raw_start_"+url+"_end")
-
+        bytes32 key = getUserLikeUrlKey(usernameHash, urlHash);
+        require(likeStorage.getUserLike(key) == false, "Already liked");
+        likeStorage.setUserLike(key, true);
+        _sendDonation(msg.value, donateAddress);
     }
 
     function unlike(uint resourceTypeId, bytes32 resourceIdHash) public {
@@ -122,8 +131,11 @@ contract LikeLogic {
         bytes32 usernameHash = getGLUsernameHash(msg.sender);
 
         bytes32 resourceIdKey = getResourceIdKey(resourceTypeId, resourceIdHash);
-        bytes32 userLikeKey = getUserLikeKey(usernameHash, resourceTypeId, resourceIdHash);
+        bytes32 userLikeKey = getUserLikeResourceKey(usernameHash, resourceTypeId, resourceIdHash);
         require(likeStorage.getUserLike(userLikeKey), "User not liked this content");
+        likeStorage.setUserLike(userLikeKey, false);
+
+        // todo move to incrementMethod and rename it
         LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
         resourceIdStatistics.resourceTypeId = resourceTypeId;
         resourceIdStatistics.reactions--;
@@ -134,12 +146,16 @@ contract LikeLogic {
 
     /* Getters */
 
-    function getUserLikeKey(bytes32 usernameHash, uint resourceTypeId, bytes32 resourceIdHash) public view returns (bytes32){
+    function getUserLikeResourceKey(bytes32 usernameHash, uint resourceTypeId, bytes32 resourceIdHash) public view returns (bytes32){
         return keccak256(abi.encode("user_like_", usernameHash, "_", resourceTypeId, "_", resourceIdHash, "_end"));
     }
 
+    function getUserLikeUrlKey(bytes32 usernameHash, bytes32 urlHash) public view returns (bytes32){
+        return keccak256(abi.encode("user_like_url_", usernameHash, "_", urlHash, "_end"));
+    }
+
     function getResourceIdKey(uint resourceTypeId, bytes32 resourceIdHash) public view returns (bytes32){
-        return keccak256(abi.encode("structured_start_", resourceTypeId, "_", resourceIdHash, "_end"));
+        return keccak256(abi.encode("resource_id_", resourceTypeId, "_", resourceIdHash, "_end"));
     }
 
     function getGLUsernameHash(address _address) public view returns (bytes32){

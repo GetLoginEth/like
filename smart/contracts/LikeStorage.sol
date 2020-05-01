@@ -23,8 +23,12 @@ contract LikeStorage {
     }
 
     struct ResourceIdStatistics {
+        // only for likes with resource_type_id and resource_id
         uint resourceTypeId;
+        // only for likes with resource_type_id and resource_id
         bytes32 resourceIdHash;
+        // only for likes with url
+        bytes32 urlHash;
         uint reactions;
         uint donates;
         bool isActive;
