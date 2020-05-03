@@ -6,10 +6,12 @@ contract LikeStorage {
     address public logicAddress;
     uint public newResourceId = 1;
     mapping(uint => ResourceType) public resources;
-    // todo emit event when resource created (for fast find with web3)
     //mapping(bytes32 => ResourceTypeStatistics) public resourceTypeStatistics;
     mapping(bytes32 => ResourceIdStatistics) public resourceIdStatistics;
     mapping(bytes32 => bool) public userLike;
+
+    event EventLikeUrl(bytes32 indexed urlHash);
+    event EventLikeResource(uint indexed resourceType, bytes32 indexed resourceIdHash);
 
     struct ResourceType {
         uint id;
@@ -103,5 +105,13 @@ contract LikeStorage {
 
     function decrementResourceId() onlyLogicAddress public {
         newResourceId--;
+    }
+
+    function emitEventLikeUrl(bytes32 urlHash) onlyLogicAddress public {
+        emit EventLikeUrl(urlHash);
+    }
+
+    function emitEventLikeResource(uint resourceType, bytes32 resourceIdHash) onlyLogicAddress public {
+        emit EventLikeResource(resourceType, resourceIdHash);
     }
 }
