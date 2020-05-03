@@ -62,6 +62,16 @@ contract LikeLogic {
         likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
     }
 
+    function _incrementResourceUrl(bytes32 urlHash, uint donate) private {
+        bytes32 resourceIdKey = getUrlHashKey(urlHash);
+        LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
+        resourceIdStatistics.reactions++;
+        resourceIdStatistics.donates += donate;
+        resourceIdStatistics.urlHash = urlHash;
+        resourceIdStatistics.isActive = true;
+        likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
+    }
+
     function _preventDoubleLikeUrl(bytes32 usernameHash, bytes32 urlHash, bool result) private {
         bytes32 userLikeKey = getUserLikeUrlKey(usernameHash, urlHash);
         require(likeStorage.getUserLike(userLikeKey) == false, "Already liked");
@@ -123,6 +133,7 @@ contract LikeLogic {
         bytes32 key = getUserLikeUrlKey(usernameHash, urlHash);
         require(likeStorage.getUserLike(key) == false, "Already liked");
         likeStorage.setUserLike(key, true);
+        _incrementResourceUrl(urlHash, msg.value);
         _sendDonation(msg.value, donateAddress);
     }
 
@@ -147,7 +158,7 @@ contract LikeLogic {
     /* Getters */
 
     function getUserLikeResourceKey(bytes32 usernameHash, uint resourceTypeId, bytes32 resourceIdHash) public view returns (bytes32){
-        return keccak256(abi.encode("user_like_", usernameHash, "_", resourceTypeId, "_", resourceIdHash, "_end"));
+        return keccak256(abi.encode("user_like_resource_", usernameHash, "_", resourceTypeId, "_", resourceIdHash, "_end"));
     }
 
     function getUserLikeUrlKey(bytes32 usernameHash, bytes32 urlHash) public view returns (bytes32){
@@ -158,12 +169,22 @@ contract LikeLogic {
         return keccak256(abi.encode("resource_id_", resourceTypeId, "_", resourceIdHash, "_end"));
     }
 
+    function getUrlHashKey(bytes32 urlHash) public view returns (bytes32){
+        return keccak256(abi.encode("url_hash_", urlHash, "_end"));
+    }
+
     function getGLUsernameHash(address _address) public view returns (bytes32){
         return GetLoginLogic(GLStorage.logicAddress()).getUsernameByAddress(_address);
     }
 
     function getResourceIdStatistics(uint resourceTypeId, bytes32 resourceIdHash) public view returns (LikeStorage.ResourceIdStatistics memory){
         bytes32 key = getResourceIdKey(resourceTypeId, resourceIdHash);
+
+        return likeStorage.getResourceIdStatistics(key);
+    }
+
+    function getResourceIdStatisticsUrl(bytes32 urlHash) public view returns (LikeStorage.ResourceIdStatistics memory){
+        bytes32 key = getUrlHashKey(urlHash);
 
         return likeStorage.getResourceIdStatistics(key);
     }
