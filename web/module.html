@@ -5,6 +5,91 @@
     <title>Title</title>
 </head>
 <body>
-MODULE CONTENT HERE
+<style>
+    .icon {
+        width: 25px;
+        height: 25px;
+        /*background-size: 25px;*/
+
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-feature-settings: 'liga';
+        -webkit-font-smoothing: antialiased;
+        background-size: contain;
+    }
+
+    .liked {
+        background-image: url("./like-liked.svg");
+    }
+
+    .not-liked {
+        background-image: url("./like-empty.svg");
+    }
+
+    .wait {
+        background-image: url("./wait.svg");
+    }
+
+    .rotate {
+        animation: rotation 3s linear infinite;
+    }
+
+    @-webkit-keyframes rotation {
+        from {
+            -webkit-transform: rotate(0deg);
+        }
+        to {
+            -webkit-transform: rotate(359deg);
+        }
+    }
+</style>
+
+<div class="do-like">
+    <i class="like-btn icon not-liked"></i> Like <span id="likes-count"></span> <i class="icon wait rotate"></i>
+</div>
+
+<script>
+    let likes = 1;
+    // todo disable text selection
+    // todo inject here getlogin module
+    const toggleLikeIcon = (element, onLike, onDislike) => {
+        const classList = element.querySelector(".like-btn").classList;
+        if (classList.contains("not-liked")) {
+            classList.remove("not-liked");
+            classList.add("liked");
+            if (onLike) {
+                onLike();
+            }
+        } else {
+            classList.remove("liked");
+            classList.add("not-liked");
+            if (onDislike) {
+                onDislike();
+            }
+        }
+    };
+
+    const displayLikesCount = (likes) => {
+        document.getElementById('likes-count').innerText = likes;
+    };
+
+    document.querySelector(".do-like").addEventListener('click', (e) => {
+        const element = e.currentTarget;
+        toggleLikeIcon(element, () => likes++, () => likes--);
+        //console.log();
+
+        displayLikesCount(likes);
+    });
+
+    displayLikesCount(likes);
+</script>
 </body>
 </html>
