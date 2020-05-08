@@ -2,15 +2,81 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>GetLogin Like Module</title>
+    <!--<script async src="https://swarm-gateways.net/bzz:/getlogin.eth/api/last.js"></script>-->
 </head>
 <body>
 <style>
-    .icon {
-        width: 25px;
-        height: 25px;
-        /*background-size: 25px;*/
+    html, body, div, span, applet, object, iframe,
+    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+    a, abbr, acronym, address, big, cite, code,
+    del, dfn, em, img, ins, kbd, q, s, samp,
+    small, strike, strong, sub, sup, tt, var,
+    b, u, i, center,
+    dl, dt, dd, ol, ul, li,
+    fieldset, form, label, legend,
+    table, caption, tbody, tfoot, thead, tr, th, td,
+    article, aside, canvas, details, embed,
+    figure, figcaption, footer, header, hgroup,
+    menu, nav, output, ruby, section, summary,
+    time, mark, audio, video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+    }
 
+    /* HTML5 display-role reset for older browsers */
+    article, aside, details, figcaption, figure,
+    footer, header, hgroup, menu, nav, section {
+        display: block;
+    }
+
+    body {
+        line-height: 1;
+    }
+
+    ol, ul {
+        list-style: none;
+    }
+
+    blockquote, q {
+        quotes: none;
+    }
+
+    blockquote:before, blockquote:after,
+    q:before, q:after {
+        content: '';
+        content: none;
+    }
+
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    /*************/
+
+    .do-like {
+        user-select: none;
+    }
+
+    #tx-status-progress {
+        display: none;
+    }
+
+    #likes-count {
+        /*font-size: 14px;
+        line-height: 16px;
+        height: 16px;*/
+    }
+
+    .icon {
+        width: 24px;
+        height: 24px;
+        /*background-size: 25px;*/
         font-weight: normal;
         font-style: normal;
         font-size: 24px;
@@ -27,15 +93,15 @@
     }
 
     .liked {
-        background-image: url("./like-liked.svg");
+        background-image: url("./img/like-liked.svg");
     }
 
     .not-liked {
-        background-image: url("./like-empty.svg");
+        background-image: url("./img/like-empty.svg");
     }
 
     .wait {
-        background-image: url("./wait.svg");
+        background-image: url("./img/wait.svg");
     }
 
     .rotate {
@@ -53,12 +119,12 @@
 </style>
 
 <div class="do-like">
-    <i class="like-btn icon not-liked"></i> Like <span id="likes-count"></span> <i class="icon wait rotate"></i>
+    <i class="like-btn icon not-liked"></i> <span id="likes-count"></span> <i id="tx-status-progress"
+                                                                              class="icon wait rotate"></i>
 </div>
 
 <script>
     let likes = 1;
-    // todo disable text selection
     // todo inject here getlogin module
     const toggleLikeIcon = (element, onLike, onDislike) => {
         const classList = element.querySelector(".like-btn").classList;
@@ -81,15 +147,30 @@
         document.getElementById('likes-count').innerText = likes;
     };
 
+    const showTxProgress = () => {
+        const progressElement = document.getElementById('tx-status-progress');
+        progressElement.style.display = "inline-block";
+        setTimeout(_ => {
+            progressElement.style.display = "none";
+        }, 2000)
+    };
+
     document.querySelector(".do-like").addEventListener('click', (e) => {
         const element = e.currentTarget;
         toggleLikeIcon(element, () => likes++, () => likes--);
         //console.log();
+        if (window._likeModuleInstance) {
+            window._likeModuleInstance();
+        } else {
+            console.error('Like module instance not found');
+        }
 
         displayLikesCount(likes);
+        showTxProgress();
     });
 
     displayLikesCount(likes);
 </script>
+<script src="./LikeModule.js"></script>
 </body>
 </html>
