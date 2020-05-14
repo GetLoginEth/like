@@ -5,19 +5,66 @@
     <title>Title</title>
 </head>
 <body>
+<style>
+    body {
+        padding: 30px;
+    }
+
+    .flex-container {
+        display: flex;
+    }
+
+    .flex-item {
+        margin-right: 20px;
+    }
+</style>
 <h1>Hello World!</h1>
 
-<iframe width="1166" height="656" src="https://www.youtube.com/embed/vX3F4QyQRw8" frameborder="0"
-        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-<p>Send crypto-like here</p>
+<div class="flex-container">
+    <div class="flex-item">
+        <iframe width="300" height="200" src="https://www.youtube.com/embed/vX3F4QyQRw8" frameborder="0"
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
 
-<div id="plugin"></div>
+        <p>Send crypto-like here</p>
+
+        <div id="like1"></div>
+    </div>
+    <div class="flex-item">
+        <iframe width="300" height="200" src="https://www.youtube.com/embed/j23HnORQXvs" frameborder="0"
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+
+        <p>Send crypto-like here</p>
+
+        <div id="like2"></div>
+    </div>
+</div>
 
 <script>
-    window.onLikeInjectorLoaded = (instance) => {
+    function hello() {
+        alert('hello');
+    }
+
+    // onLikeInjectorLoaded will call once and remove after LikeInjector.js loaded
+    window._onLikeInjectorLoaded = (instance) => {
         console.log('Example like plugin loaded');
-        //window.likePlugin = instance;
-        instance.draw('#plugin', "https://www.youtube.com/watch?v=vX3F4QyQRw8");
+        instance.draw({
+            selector: '#like1',
+            likeUrl: "https://www.youtube.com/watch?v=vX3F4QyQRw8",
+            /*onLike: () => {
+                console.log('URL liked');
+            },
+            onDislike: () => {
+                console.log('URL disliked');
+            }*/
+        });
+
+        instance.draw({
+            selector: '#like2',
+            likeUrl: "https://www.youtube.com/watch?v=j23HnORQXvs",
+        });
+
     };
 </script>
 <script src="./LikeInjector.js"></script>

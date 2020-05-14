@@ -124,7 +124,27 @@
 </div>
 
 <script>
+
+
     let likes = 1;
+
+    window._onLikeModuleLoaded = (instance) => {
+        //instance.init(window.location.search);
+        console.log('Like module init', instance);
+    };
+
+    function sendEvent(event, data) {
+        parent.postMessage({event, data}, "*");
+    }
+
+    function onLike() {
+        sendEvent('like', {url: '---', contentId: 'ididid', contentTypeId: 'disf'});
+    }
+
+    function onDislike() {
+        sendEvent('dislike', {url: '---', contentId: 'dis_ididid', contentTypeId: 'dis_disf'});
+    }
+
     // todo inject here getlogin module
     const toggleLikeIcon = (element, onLike, onDislike) => {
         const classList = element.querySelector(".like-btn").classList;
@@ -157,13 +177,19 @@
 
     document.querySelector(".do-like").addEventListener('click', (e) => {
         const element = e.currentTarget;
-        toggleLikeIcon(element, () => likes++, () => likes--);
+        toggleLikeIcon(element, () => {
+            likes++;
+            onLike();
+        }, () => {
+            likes--;
+            onDislike();
+        });
         //console.log();
-        if (window._likeModuleInstance) {
+        /*if (window._likeModuleInstance) {
             window._likeModuleInstance();
         } else {
             console.error('Like module instance not found');
-        }
+        }*/
 
         displayLikesCount(likes);
         showTxProgress();
