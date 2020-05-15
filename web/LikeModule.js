@@ -1,16 +1,27 @@
 'use strict'
 
 class LikeModule {
-    constructor(getLoginInstance) {
-        /*this.getLoginInstance = getLoginInstance;
-        this.contractAddress = '0x...';
-        this.abi = [];
-        /*this.getLoginInstance.setClientAbi(this.abi);
-        this.getLoginInstance.setOnLogout(_ => {
-            console.log('logout');
-        });*/
+    constructor() {
         this.urlParams = new URLSearchParams(window.location.search);
-        // todo check is enough data in urlParams
+        //this.params=Object.fromEntries(this.urlParams);
+        this.id = this.urlParams.get('id');
+        this.mode = this.urlParams.get('mode');
+        this.url = this.urlParams.get('url');
+        this.resourceType = this.urlParams.get('resourceType');
+        this.resourceId = this.urlParams.get('resourceId');
+
+        if (this.mode === 'url' && !this.url) {
+            throw new Error('Incorrect url data');
+        } else if (this.mode === 'resource' && (!this.resourceType || !this.resourceId)) {
+            throw new Error('Incorrect resource data');
+        }
+
+        this.likeInfo = {};
+        // when likes count changed
+        this.onLikesChanged = null;
+        // when status of transaction changed
+        this.onTxProgressChanged = null;
+        this.getLoginInstance = null;
     }
 
     init() {
@@ -20,46 +31,72 @@ class LikeModule {
         }
     }
 
-    _onLikeClick() {
-        alert('Click')
+    onLike() {
+        this.sendEvent('like', {
+            mode: this.mode,
+            url: this.url,
+            resourceType: this.resourceType,
+            resourceId: this.resourceId
+        });
     }
 
-    /*draw(params) {
-        const modes = {url: 'url', resource: 'resource'};
-        let mode;
-        if (params.likeUrl) {
-            mode = modes.url;
-        } else if (params.resourceType && params.resourceId) {
-            mode = modes.resource;
+    onDislike() {
+        this.sendEvent('dislike', {
+            mode: this.mode,
+            url: this.url,
+            resourceType: this.resourceType,
+            resourceId: this.resourceId
+        });
+    }
+
+    sendEvent(event, data) {
+        parent.postMessage({id: this.id, type: 'like-module', event, data}, "*");
+    }
+
+    setGetLoginInstance(getLoginInstance) {
+        this.getLoginInstance = getLoginInstance;
+    }
+
+    setLikes(likes, isLiked) {
+        this.likeInfo = {likes: likes, isLiked: isLiked};
+        if (this.onLikesChanged) {
+            this.onLikesChanged(likes, isLiked);
+        }
+    }
+
+    async toggleLike() {
+        this.checkGetLoginInstance();
+        const newIsLiked = !this.likeInfo.isLiked;
+        if (this.likeInfo.isLiked) {
+            this.setLikes(this.likeInfo.likes - 1, newIsLiked);
+            this.onDislike();
         } else {
-            throw new Error('Incorrect params')
+            this.setLikes(this.likeInfo.likes + 1, newIsLiked);
+            this.onLike();
         }
 
-        const element = document.querySelector(params.selector);
-        if (!element) {
-            throw new Error('Element not found');
+        // todo send tx to blockchain
+        // todo wait until mined, update actual like info
+        if (this.onTxProgressChanged) {
+            this.onTxProgressChanged(true);
+            setTimeout(_ => {
+                this.onTxProgressChanged(false);
+            }, 2000);
         }
+    }
 
-        if (mode === modes.url) {
-            // todo set action to like url hash
-        } else {
-            // todo set action to like contentType + contentId hash
+    async updateLikeInfo() {
+        this.checkGetLoginInstance();
+        // todo receive info from blockchain and set
+        this.setLikes(3, false);
+    }
+
+    checkGetLoginInstance() {
+        if (!this.getLoginInstance) {
+            throw new Error('getLoginInstance not found');
         }
-
-        // todo check and inject getlogin iframe. One iframe per page
-
-        const likeIframe = document.createElement('iframe');
-        likeIframe.setAttribute('style', 'border: 0');
-        likeIframe.src = './module.html';
-        element.appendChild(likeIframe);
-    }*/
+    }
 }
 
 // todo load getlogin plugin, then load like module
-(new LikeModule({
-    /*test: 123,
-    setClientAbi: () => {
-    },
-    setOnLogout: () => {
-    }*/
-})).init();
+(new LikeModule()).init();

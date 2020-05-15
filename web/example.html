@@ -42,29 +42,32 @@
 </div>
 
 <script>
-    function hello() {
-        alert('hello');
-    }
-
     // onLikeInjectorLoaded will call once and remove after LikeInjector.js loaded
     window._onLikeInjectorLoaded = (instance) => {
         console.log('Example like plugin loaded');
         instance.draw({
             selector: '#like1',
             likeUrl: "https://www.youtube.com/watch?v=vX3F4QyQRw8",
-            /*onLike: () => {
-                console.log('URL liked');
+            onLike: (data) => {
+                console.log('Liked 1', data);
             },
-            onDislike: () => {
-                console.log('URL disliked');
-            }*/
+            onDislike: (data) => {
+                console.log('Disliked 1', data);
+            }
         });
 
         instance.draw({
             selector: '#like2',
             likeUrl: "https://www.youtube.com/watch?v=j23HnORQXvs",
+            onLike: (data) => {
+                console.log('Liked 2', data);
+            },
+            onDislike: (data) => {
+                console.log('Disliked 2', data);
+            }
         });
 
+        // todo add example with resource
     };
 </script>
 <script src="./LikeInjector.js"></script>

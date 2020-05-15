@@ -124,78 +124,45 @@
 </div>
 
 <script>
-
-
-    let likes = 1;
-
+    /**
+     *
+     * @param {LikeModule} instance
+     */
     window._onLikeModuleLoaded = (instance) => {
-        //instance.init(window.location.search);
-        console.log('Like module init', instance);
+        console.log('Like module init', instance.id);
+        webInit(instance);
     };
 
-    function sendEvent(event, data) {
-        parent.postMessage({event, data}, "*");
-    }
-
-    function onLike() {
-        sendEvent('like', {url: '---', contentId: 'ididid', contentTypeId: 'disf'});
-    }
-
-    function onDislike() {
-        sendEvent('dislike', {url: '---', contentId: 'dis_ididid', contentTypeId: 'dis_disf'});
-    }
-
-    // todo inject here getlogin module
-    const toggleLikeIcon = (element, onLike, onDislike) => {
-        const classList = element.querySelector(".like-btn").classList;
-        if (classList.contains("not-liked")) {
-            classList.remove("not-liked");
-            classList.add("liked");
-            if (onLike) {
-                onLike();
+    /**
+     *
+     * @param {LikeModule} module
+     */
+    function webInit(module) {
+        // todo find iframe and get getlogin instance (api object)
+        // todo is ifram and instance not found - throw error
+        module.setGetLoginInstance({});
+        module.onLikesChanged = (likes, isLiked) => {
+            document.getElementById('likes-count').innerText = likes > 0 ? likes : '';
+            const classList = document.querySelector('.like-btn').classList;
+            if (isLiked) {
+                classList.remove("not-liked");
+                classList.add("liked");
+            } else {
+                classList.remove("liked");
+                classList.add("not-liked");
             }
-        } else {
-            classList.remove("liked");
-            classList.add("not-liked");
-            if (onDislike) {
-                onDislike();
-            }
-        }
-    };
-
-    const displayLikesCount = (likes) => {
-        document.getElementById('likes-count').innerText = likes;
-    };
-
-    const showTxProgress = () => {
-        const progressElement = document.getElementById('tx-status-progress');
-        progressElement.style.display = "inline-block";
-        setTimeout(_ => {
-            progressElement.style.display = "none";
-        }, 2000)
-    };
-
-    document.querySelector(".do-like").addEventListener('click', (e) => {
-        const element = e.currentTarget;
-        toggleLikeIcon(element, () => {
-            likes++;
-            onLike();
-        }, () => {
-            likes--;
-            onDislike();
+        };
+        module.onTxProgressChanged = (isShow) => {
+            const progressElement = document.getElementById('tx-status-progress');
+            progressElement.style.display = isShow ? 'inline-block' : 'none';
+        };
+        document.querySelector(".do-like").addEventListener('click', (e) => {
+            //const element = e.currentTarget;
+            module.toggleLike();
         });
-        //console.log();
-        /*if (window._likeModuleInstance) {
-            window._likeModuleInstance();
-        } else {
-            console.error('Like module instance not found');
-        }*/
 
-        displayLikesCount(likes);
-        showTxProgress();
-    });
-
-    displayLikesCount(likes);
+        module.updateLikeInfo();
+    }
 </script>
 <script src="./LikeModule.js"></script>
 </body>

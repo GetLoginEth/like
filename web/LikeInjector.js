@@ -1,28 +1,55 @@
 'use strict'
 
 class LikeInjector {
-    constructor(getLoginInstance) {
-        this.getLoginInstance = getLoginInstance;
+    constructor() {
         this.contractAddress = '0x...';
         this.abi = [];
         /*this.getLoginInstance.setClientAbi(this.abi);
         this.getLoginInstance.setOnLogout(_ => {
             console.log('logout');
         });*/
+        this.onLike = {};
+        this.onDislike = {};
+        this.moduleId = 1;
     }
 
     init() {
-        // todo inject getlogin
-        if (window && window._onLikeInjectorLoaded) {
-            window._onLikeInjectorLoaded(this);
-            delete window._onLikeInjectorLoaded;
-        }
+        let scriptUrl = "https://localhost:3000/api/last.js";
+        let appUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
+
+        // todo check double-init
+        // todo inject getlogin, wait init and then init this module
+
+        window._onGetLoginApiLoaded = (instance) => {
+            console.log('Get login loaded', instance);
+
+            if (window && window._onLikeInjectorLoaded) {
+                window._onLikeInjectorLoaded(this);
+                delete window._onLikeInjectorLoaded;
+            }
+        };
+
+        const script = document.createElement('script');
+        script.src = scriptUrl;
+        document.head.appendChild(script);
 
         window.addEventListener("message", (e) => {
-            // todo check is other apps can send here messages
+            // todo check is other apps can send here fake messages
+            const id = e.data.id;
+            const type = e.data.type;
             const event = e.data.event;
             const data = e.data.data;
-            console.log('received message', event, data);
+            if (type !== 'like-module') {
+                return;
+            }
+
+            if (event === 'like' && this.onLike[id]) {
+                this.onLike[id](data);
+            } else if (event === 'dislike' && this.onDislike[id]) {
+                this.onDislike[id](data);
+            }
+
+            //console.log('received message', id, event, data);
         }, false);
     }
 
@@ -42,16 +69,20 @@ class LikeInjector {
             throw new Error('Element not found');
         }
 
-        if (mode === modes.url) {
-            // todo set action to like url hash
-        } else {
-            // todo set action to like contentType + contentId hash
+        if (params.onLike) {
+            this.onLike[this.moduleId] = params.onLike;
+        }
+
+        if (params.onDislike) {
+            this.onDislike[this.moduleId] = params.onDislike;
         }
 
         const iframe = document.createElement('iframe');
         iframe.setAttribute('style', 'border: 0');
-        iframe.src = `./module.html?mode=${mode}&resourceType=${params.resourceType ? params.resourceType : ''}&resourceId=${params.resourceId ? params.resourceId : ''}`;
+        iframe.src = `./module.html?id=${this.moduleId}&mode=${mode}&resourceType=${params.resourceType ? params.resourceType : ''}&resourceId=${params.resourceId ? params.resourceId : ''}&url=${encodeURIComponent(params.likeUrl)}`;
         element.appendChild(iframe);
+
+        this.moduleId++;
     }
 }
 
