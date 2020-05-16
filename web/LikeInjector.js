@@ -11,22 +11,36 @@ class LikeInjector {
         this.onLike = {};
         this.onDislike = {};
         this.moduleId = 1;
+
+        this.isAppAllowed = false;
+        this.allowAppUrl = null;
     }
 
     init() {
+        let appId = 3;
         let scriptUrl = "https://localhost:3000/api/last.js";
         let appUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
+        let redirectUrl = 'https://localhost:1234/token.html';
+        let accessToken = null;
 
         // todo check double-init
-        // todo inject getlogin, wait init and then init this module
 
         window._onGetLoginApiLoaded = (instance) => {
             console.log('Get login loaded', instance);
+            instance.init(appId, appUrl, redirectUrl, accessToken)
+                .then(data => {
+                    console.log('Getlogin init data', data);
+                    this.isAppAllowed = data.data.is_client_allowed;
+                    if (!data.data.is_client_allowed) {
+                        this.allowAppUrl = instance.getAuthorizeUrl();
+                        console.log('allow app url', this.allowAppUrl);
+                    }
 
-            if (window && window._onLikeInjectorLoaded) {
-                window._onLikeInjectorLoaded(this);
-                delete window._onLikeInjectorLoaded;
-            }
+                    if (window && window._onLikeInjectorLoaded) {
+                        window._onLikeInjectorLoaded(this);
+                        delete window._onLikeInjectorLoaded;
+                    }
+                });
         };
 
         const script = document.createElement('script');
@@ -47,6 +61,9 @@ class LikeInjector {
                 this.onLike[id](data);
             } else if (event === 'dislike' && this.onDislike[id]) {
                 this.onDislike[id](data);
+            } else if (event === 'allowApp') {
+                const newWindow = window.open(this.allowAppUrl);
+                console.log('newWindow', newWindow);
             }
 
             //console.log('received message', id, event, data);
@@ -79,7 +96,7 @@ class LikeInjector {
 
         const iframe = document.createElement('iframe');
         iframe.setAttribute('style', 'border: 0');
-        iframe.src = `./module.html?id=${this.moduleId}&mode=${mode}&resourceType=${params.resourceType ? params.resourceType : ''}&resourceId=${params.resourceId ? params.resourceId : ''}&url=${encodeURIComponent(params.likeUrl)}`;
+        iframe.src = `./module.html?id=${this.moduleId}&mode=${mode}&resourceType=${params.resourceType ? params.resourceType : ''}&resourceId=${params.resourceId ? params.resourceId : ''}&isAppAllowed=${this.isAppAllowed}&url=${encodeURIComponent(params.likeUrl)}`;
         element.appendChild(iframe);
 
         this.moduleId++;

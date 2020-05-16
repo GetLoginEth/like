@@ -4,6 +4,7 @@ class LikeModule {
     constructor() {
         this.urlParams = new URLSearchParams(window.location.search);
         //this.params=Object.fromEntries(this.urlParams);
+        this.isAppAllowed = this.urlParams.get('isAppAllowed') === 'true';
         this.id = this.urlParams.get('id');
         this.mode = this.urlParams.get('mode');
         this.url = this.urlParams.get('url');
@@ -49,6 +50,15 @@ class LikeModule {
         });
     }
 
+    onAllowApp() {
+        this.sendEvent('allowApp', {
+            mode: this.mode,
+            url: this.url,
+            resourceType: this.resourceType,
+            resourceId: this.resourceId
+        });
+    }
+
     sendEvent(event, data) {
         parent.postMessage({id: this.id, type: 'like-module', event, data}, "*");
     }
@@ -66,6 +76,11 @@ class LikeModule {
 
     async toggleLike() {
         this.checkGetLoginInstance();
+        if (!this.isAppAllowed) {
+            this.onAllowApp();
+            return;
+        }
+
         const newIsLiked = !this.likeInfo.isLiked;
         if (this.likeInfo.isLiked) {
             this.setLikes(this.likeInfo.likes - 1, newIsLiked);

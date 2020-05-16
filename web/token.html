@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Token</title>
+</head>
+<body>
+<p id="status">Saving token...</p>
+<script>
+    const params = new URLSearchParams(window.location.hash.replace('#', ''));
+    const token = params.get('access_token');
+    if (token) {
+        localStorage.setItem('access_token', token);
+        window.open('', '_self').close();
+    } else {
+        document.getElementById('status').innerText = 'Error while receive access token';
+    }
+</script>
+</body>
+</html>
