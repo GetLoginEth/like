@@ -21,9 +21,7 @@ class LikeInjector {
         let scriptUrl = "https://localhost:3000/api/last.js";
         let appUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
         let redirectUrl = 'https://localhost:1234/token.html';
-        let accessToken = null;
-
-        // todo check double-init
+        let accessToken = localStorage.getItem('access_token');
 
         window._onGetLoginApiLoaded = (instance) => {
             console.log('Get login loaded', instance);
@@ -31,9 +29,11 @@ class LikeInjector {
                 .then(data => {
                     console.log('Getlogin init data', data);
                     this.isAppAllowed = data.data.is_client_allowed;
-                    if (!data.data.is_client_allowed) {
+                    if (this.isAppAllowed) {
+                        console.log('App allowed!');
+                    } else {
                         this.allowAppUrl = instance.getAuthorizeUrl();
-                        console.log('allow app url', this.allowAppUrl);
+                        console.log('App not allowed! Allow app url', this.allowAppUrl);
                     }
 
                     if (window && window._onLikeInjectorLoaded) {
@@ -43,10 +43,12 @@ class LikeInjector {
                 });
         };
 
+        // inject getlogin script
         const script = document.createElement('script');
         script.src = scriptUrl;
         document.head.appendChild(script);
 
+        // subscribe to messages from child iframes
         window.addEventListener("message", (e) => {
             // todo check is other apps can send here fake messages
             const id = e.data.id;
