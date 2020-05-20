@@ -1,14 +1,13 @@
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const fs = require('fs');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: "production",
     entry: {
-        //main: './web/index.js'
         LikeInjector: './web/LikeInjector.js',
         LikeModule: './web/LikeModule.js',
-        //vendors: ['react']
     },
     output: {
         path: path.resolve(__dirname, 'build'),
@@ -25,12 +24,23 @@ module.exports = {
             }
         ]
     },
-    plugins:[
+    plugins: [
         new CleanWebpackPlugin(),
         new CopyPlugin({
             patterns: [
-                { from: 'public', to: '.' }
+                {from: 'public', to: '.'},
+                {from: 'web/img', to: 'img'},
             ],
         }),
-    ]
+    ],
+    devServer: {
+        contentBase: path.join(__dirname, 'build'),
+        compress: true,
+        port: 1234,
+        https: {
+            key: fs.readFileSync('./key.pem'),
+            cert: fs.readFileSync('./cert.pem'),
+            //ca: fs.readFileSync('/path/to/ca.pem'),
+        }
+    }
 }
