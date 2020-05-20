@@ -1,6 +1,7 @@
 pragma solidity ^0.6.4;
 pragma experimental ABIEncoderV2;
 
+// SPDX-License-Identifier: UNLICENSED
 contract LikeStorage {
     address public owner;
     address public logicAddress;

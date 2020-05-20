@@ -11,6 +11,7 @@ abstract contract GetLoginStorage {
     function logicAddress() public virtual view returns (address);
 }
 
+// SPDX-License-Identifier: UNLICENSED
 contract LikeLogic {
     LikeStorage public likeStorage;
     GetLoginStorage public GLStorage;
