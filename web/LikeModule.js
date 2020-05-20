@@ -113,5 +113,4 @@ class LikeModule {
     }
 }
 
-// todo load getlogin plugin, then load like module
 (new LikeModule()).init();
