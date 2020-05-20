@@ -61,6 +61,10 @@
     .do-like {
         user-select: none;
         cursor: pointer;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
     }
 
     #tx-status-progress {
@@ -68,14 +72,13 @@
     }
 
     #likes-count {
-        /*font-size: 14px;
-        line-height: 16px;
-        height: 16px;*/
+        font-size: 16px;
     }
 
     .icon {
         width: 24px;
         height: 24px;
+        margin-right: 8px;
         /*background-size: 25px;*/
         font-weight: normal;
         font-style: normal;
