@@ -23,6 +23,7 @@ class LikeModule {
         // when status of transaction changed
         this.onTxProgressChanged = null;
         this.getLoginInstance = null;
+        this.sendMessageTimeout = 60;
     }
 
     init() {
@@ -59,8 +60,50 @@ class LikeModule {
         });
     }
 
+    _randomUid() {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
+
     sendEvent(event, data) {
         parent.postMessage({id: this.id, type: 'like-module', event, data}, "*");
+    }
+
+    async getParentData(method, data) {
+        //window.addEventListener('message')
+        //parent.postMessage({id: this.id, type: 'like-module', method, data}, "*");
+        const id = this._randomUid();
+        return new Promise((resolve, reject) => {
+            let timeout = setTimeout(() => {
+                reject('Timeout error');
+            }, this.sendMessageTimeout * 1000);
+
+            const listener = (event) => {
+                if (typeof event.data !== 'object' || event.data.id !== id) {
+                    return;
+                }
+
+                clearTimeout(timeout);
+                window.removeEventListener('message', listener);
+
+                if (event.data.result) {
+                    resolve(event.data.result);
+                } else {
+                    reject(event.data.error ? event.data.error : 'Unknown error');
+                }
+            };
+
+            window.addEventListener('message', listener);
+            const message = {
+                id: this.id,
+                requestId: id,
+                type: 'like-module-get',
+                event: method,
+                data
+            };
+
+            parent.postMessage(message, "*");
+        });
+
     }
 
     setGetLoginInstance(getLoginInstance) {
@@ -102,8 +145,11 @@ class LikeModule {
 
     async updateLikeInfo() {
         this.checkGetLoginInstance();
-        // todo receive info from blockchain and set
-        this.setLikes(3, false);
+        this.getParentData('getResourceIdStatisticsUrl', this.url)
+            .then(data => {
+                console.log(data);
+                this.setLikes(data.reactions, false);
+            });
     }
 
     checkGetLoginInstance() {

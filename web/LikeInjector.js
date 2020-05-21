@@ -993,6 +993,7 @@ class LikeInjector {
     onLike = {};
     onDislike = {};
     moduleId = 1;
+    iframes = {};
     isAppAllowed = false;
     allowAppUrl = null;
 
@@ -1050,9 +1051,33 @@ class LikeInjector {
             // todo check is other apps can send here fake messages
             // todo check origin?
             const id = e.data.id;
+            const requestId = e.data.requestId;
             const type = e.data.type;
             const event = e.data.event;
             const data = e.data.data;
+            if (type === 'like-module-get') {
+                if (event === 'getResourceIdStatisticsUrl') {
+                    const receiveInfo = async () => {
+                        const urlHash = await this.getLoginInstance.keccak256(data);
+                        return this.getLoginInstance.callContractMethod(this.likeLogicAddress, event, urlHash);
+                    };
+                    receiveInfo()
+                        .then(data => {
+                            //console.log(data)
+                            this.iframes[id].contentWindow.postMessage({
+                                id: requestId,
+                                //result: 'hello world (' + event + ') + ' + data
+                                result: data
+                            }, '*');
+                        });
+
+                    //console.log('like-module-get OK');
+                    //console.log(this.iframes);
+
+                    return;
+                }
+            }
+
             if (type !== 'like-module') {
                 return;
             }
@@ -1064,7 +1089,7 @@ class LikeInjector {
                     .then(urlHash => {
                         console.log('urlHash', urlHash);
                         this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {});
-                    })
+                    });
             } else if (event === 'dislike' && this.onDislike[id]) {
                 this.onDislike[id](data);
             } else if (event === 'allowApp') {
@@ -1104,6 +1129,8 @@ class LikeInjector {
         iframe.setAttribute('style', 'border: 0');
         iframe.src = `./module.html?id=${this.moduleId}&mode=${mode}&resourceType=${params.resourceType ? params.resourceType : ''}&resourceId=${params.resourceId ? params.resourceId : ''}&isAppAllowed=${this.isAppAllowed}&url=${encodeURIComponent(params.likeUrl)}`;
         element.appendChild(iframe);
+
+        this.iframes[this.moduleId] = iframe;
 
         this.moduleId++;
     }
