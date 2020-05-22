@@ -4,6 +4,8 @@ const LikeLogic = artifacts.require("./LikeLogic.sol");
 const LikeStorage = artifacts.require("./LikeStorage.sol");
 const willFail = require("./exceptions.js").willFail;
 let getLoginLogic, getLoginStorage, likeLogic, likeStorage;
+const adminHash = web3.utils.keccak256("admin");
+const igorHash = web3.utils.keccak256("igor");
 
 contract("Like", async accounts => {
     describe('User', async () => {
@@ -15,8 +17,8 @@ contract("Like", async accounts => {
 
             await likeStorage.setLogicAddress(likeLogic.address);
             //await getLoginLogic.init();
-            await getLoginLogic.setAddressUsername(accounts[0], web3.utils.keccak256("admin"));
-            await getLoginLogic.setAddressUsername(accounts[1], web3.utils.keccak256("igor"));
+            await getLoginLogic.setAddressUsername(accounts[0], adminHash);
+            await getLoginLogic.setAddressUsername(accounts[1], igorHash);
         });
 
         /*beforeEach(async () => {
@@ -135,6 +137,12 @@ contract("Like", async accounts => {
             assert.equal(afterDonateLikeInfo.reactions, 1, "Incorrect reactions");
             assert.equal(afterDonateLikeInfo.isActive, true, "Incorrect isActive");
             assert.equal(web3.utils.fromWei(afterDonateLikeInfo.donates, "ether"), "0.111", "Incorrect isActive");
+
+            // check like info with user like
+            const userLikeInfo = await likeLogic.getUserStatisticsUrl(adminHash, url2Hash);
+            assert.equal(userLikeInfo.resourceStatistics.urlHash, url2Hash, "Incorrect urlHash");
+            assert.equal(userLikeInfo.usernameHash, adminHash, "Incorrect usernameHash");
+            assert.equal(userLikeInfo.isLiked, true, "Incorrect isLiked");
         });
 
         it("Unlike", async () => {

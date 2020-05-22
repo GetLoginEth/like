@@ -17,6 +17,12 @@ contract LikeLogic {
     GetLoginStorage public GLStorage;
     address public owner;
 
+    struct UserStatistics {
+        LikeStorage.ResourceIdStatistics resourceStatistics;
+        bytes32 usernameHash;
+        bool isLiked;
+    }
+
     constructor(LikeStorage _likeStorage, GetLoginStorage _GLStorage) public {
         _setLikeStorage(_likeStorage);
         _setOwner(msg.sender);
@@ -184,10 +190,24 @@ contract LikeLogic {
         return likeStorage.getResourceIdStatistics(key);
     }
 
+    /**
+    Get like statistics by any keccak256(url) hash
+    **/
     function getResourceIdStatisticsUrl(bytes32 urlHash) public view returns (LikeStorage.ResourceIdStatistics memory){
         bytes32 key = getUrlHashKey(urlHash);
 
         return likeStorage.getResourceIdStatistics(key);
+    }
+
+    /**
+    Get like + user statistics by any keccak256(url) hash
+    **/
+    function getUserStatisticsUrl(bytes32 usernameHash, bytes32 urlHash) public view returns (UserStatistics memory){
+        return UserStatistics({
+            resourceStatistics : getResourceIdStatisticsUrl(urlHash),
+            usernameHash : usernameHash,
+            isLiked : likeStorage.getUserLike(getUserLikeUrlKey(usernameHash, urlHash))
+            });
     }
 
     /* Validators */
