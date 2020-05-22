@@ -145,10 +145,10 @@ class LikeModule {
 
     async updateLikeInfo() {
         this.checkGetLoginInstance();
-        this.getParentData('getResourceIdStatisticsUrl', this.url)
+        this.getParentData('getUserStatisticsUrl', this.url)
             .then(data => {
-                console.log(data);
-                this.setLikes(data.reactions, false);
+                //console.log(data);
+                this.setLikes(data.resourceStatistics.reactions, data.isLiked);
             });
     }
 

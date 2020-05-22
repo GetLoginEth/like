@@ -532,6 +532,35 @@ class LikeInjector {
         {
             "inputs": [
                 {
+                    "internalType": "contract LikeStorage",
+                    "name": "_likeStorage",
+                    "type": "address"
+                },
+                {
+                    "internalType": "contract GetLoginStorage",
+                    "name": "_GLStorage",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "inputs": [],
+            "name": "GLStorage",
+            "outputs": [
+                {
+                    "internalType": "contract GetLoginStorage",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
                     "internalType": "string",
                     "name": "title",
                     "type": "string"
@@ -548,120 +577,6 @@ class LikeInjector {
                 }
             ],
             "name": "createResourceType",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "resourceTypeId",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "bytes32",
-                    "name": "resourceIdHash",
-                    "type": "bytes32"
-                },
-                {
-                    "internalType": "address payable",
-                    "name": "donateAddress",
-                    "type": "address"
-                }
-            ],
-            "name": "like",
-            "outputs": [],
-            "stateMutability": "payable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "bytes32",
-                    "name": "urlHash",
-                    "type": "bytes32"
-                },
-                {
-                    "internalType": "address payable",
-                    "name": "donateAddress",
-                    "type": "address"
-                }
-            ],
-            "name": "likeUrl",
-            "outputs": [],
-            "stateMutability": "payable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "contract GetLoginStorage",
-                    "name": "_storageAddress",
-                    "type": "address"
-                }
-            ],
-            "name": "setGLStorage",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "contract LikeStorage",
-                    "name": "_storageAddress",
-                    "type": "address"
-                }
-            ],
-            "name": "setLikeStorage",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "address",
-                    "name": "_address",
-                    "type": "address"
-                }
-            ],
-            "name": "setOwner",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "contract LikeStorage",
-                    "name": "_likeStorage",
-                    "type": "address"
-                },
-                {
-                    "internalType": "contract GetLoginStorage",
-                    "name": "_GLStorage",
-                    "type": "address"
-                }
-            ],
-            "stateMutability": "nonpayable",
-            "type": "constructor"
-        },
-        {
-            "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "resourceTypeId",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "bytes32",
-                    "name": "resourceIdHash",
-                    "type": "bytes32"
-                }
-            ],
-            "name": "unlike",
             "outputs": [],
             "stateMutability": "nonpayable",
             "type": "function"
@@ -889,16 +804,99 @@ class LikeInjector {
             "type": "function"
         },
         {
-            "inputs": [],
-            "name": "GLStorage",
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "usernameHash",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "bytes32",
+                    "name": "urlHash",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "getUserStatisticsUrl",
             "outputs": [
                 {
-                    "internalType": "contract GetLoginStorage",
+                    "components": [
+                        {
+                            "components": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "resourceTypeId",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "bytes32",
+                                    "name": "resourceIdHash",
+                                    "type": "bytes32"
+                                },
+                                {
+                                    "internalType": "bytes32",
+                                    "name": "urlHash",
+                                    "type": "bytes32"
+                                },
+                                {
+                                    "internalType": "uint256",
+                                    "name": "reactions",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "uint256",
+                                    "name": "donates",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "bool",
+                                    "name": "isActive",
+                                    "type": "bool"
+                                }
+                            ],
+                            "internalType": "struct LikeStorage.ResourceIdStatistics",
+                            "name": "resourceStatistics",
+                            "type": "tuple"
+                        },
+                        {
+                            "internalType": "bytes32",
+                            "name": "usernameHash",
+                            "type": "bytes32"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "isLiked",
+                            "type": "bool"
+                        }
+                    ],
+                    "internalType": "struct LikeLogic.UserStatistics",
                     "name": "",
-                    "type": "address"
+                    "type": "tuple"
                 }
             ],
             "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "resourceTypeId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes32",
+                    "name": "resourceIdHash",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "address payable",
+                    "name": "donateAddress",
+                    "type": "address"
+                }
+            ],
+            "name": "like",
+            "outputs": [],
+            "stateMutability": "payable",
             "type": "function"
         },
         {
@@ -915,6 +913,24 @@ class LikeInjector {
             "type": "function"
         },
         {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "urlHash",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "address payable",
+                    "name": "donateAddress",
+                    "type": "address"
+                }
+            ],
+            "name": "likeUrl",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        },
+        {
             "inputs": [],
             "name": "owner",
             "outputs": [
@@ -925,6 +941,63 @@ class LikeInjector {
                 }
             ],
             "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "contract GetLoginStorage",
+                    "name": "_storageAddress",
+                    "type": "address"
+                }
+            ],
+            "name": "setGLStorage",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "contract LikeStorage",
+                    "name": "_storageAddress",
+                    "type": "address"
+                }
+            ],
+            "name": "setLikeStorage",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_address",
+                    "type": "address"
+                }
+            ],
+            "name": "setOwner",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "resourceTypeId",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes32",
+                    "name": "resourceIdHash",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "unlike",
+            "outputs": [],
+            "stateMutability": "nonpayable",
             "type": "function"
         },
         {
@@ -1033,7 +1106,7 @@ class LikeInjector {
             this.getLoginInstance.setOnLogout(_ => {
                 console.log('implement logout event here');
             });
-            this.likeLogicAddress = await this.getLoginInstance.callContractMethod(this.likeStorageAddress, 'logicAddress', null);
+            this.likeLogicAddress = await this.getLoginInstance.callContractMethod(this.likeStorageAddress, 'logicAddress');
             this.getLoginInstance.setClientAbi(this.logicAbi);
             if (window && window._onLikeInjectorLoaded) {
                 window._onLikeInjectorLoaded(this);
@@ -1056,10 +1129,12 @@ class LikeInjector {
             const event = e.data.event;
             const data = e.data.data;
             if (type === 'like-module-get') {
-                if (event === 'getResourceIdStatisticsUrl') {
+                if (event === 'getUserStatisticsUrl') {
                     const receiveInfo = async () => {
                         const urlHash = await this.getLoginInstance.keccak256(data);
-                        return this.getLoginInstance.callContractMethod(this.likeLogicAddress, event, urlHash);
+                        const usernameHash = (await this.getLoginInstance.getUserInfo())['usernameHash'];
+                        console.log(urlHash, usernameHash);
+                        return this.getLoginInstance.callContractMethod(this.likeLogicAddress, event, usernameHash, urlHash);
                     };
                     receiveInfo()
                         .then(data => {
