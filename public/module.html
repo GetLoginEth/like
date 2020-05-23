@@ -141,9 +141,7 @@
      * @param {LikeModule} module
      */
     function webInit(module) {
-        // todo find iframe and get getlogin instance (api object)
-        // todo is ifram and instance not found - throw error
-        module.setGetLoginInstance({});
+        //module.setGetLoginInstance({});
         module.onLikesChanged = (likes, isLiked) => {
             document.getElementById('likes-count').innerText = likes > 0 ? likes : '';
             const classList = document.querySelector('.like-btn').classList;
@@ -160,7 +158,6 @@
             progressElement.style.display = isShow ? 'inline-block' : 'none';
         };
         document.querySelector(".do-like").addEventListener('click', (e) => {
-            //const element = e.currentTarget;
             module.toggleLike();
         });
 

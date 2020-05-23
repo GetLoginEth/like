@@ -3,7 +3,6 @@
 class LikeModule {
     constructor() {
         this.urlParams = new URLSearchParams(window.location.search);
-        //this.params=Object.fromEntries(this.urlParams);
         this.isAppAllowed = this.urlParams.get('isAppAllowed') === 'true';
         this.id = this.urlParams.get('id');
         this.mode = this.urlParams.get('mode');
@@ -43,7 +42,7 @@ class LikeModule {
     }
 
     onDislike() {
-        this.sendEvent('dislike', {
+        this.sendEvent('unlike', {
             mode: this.mode,
             url: this.url,
             resourceType: this.resourceType,
@@ -68,9 +67,7 @@ class LikeModule {
         parent.postMessage({id: this.id, type: 'like-module', event, data}, "*");
     }
 
-    async getParentData(method, data) {
-        //window.addEventListener('message')
-        //parent.postMessage({id: this.id, type: 'like-module', method, data}, "*");
+    async callMethod(method, data) {
         const id = this._randomUid();
         return new Promise((resolve, reject) => {
             let timeout = setTimeout(() => {
@@ -103,12 +100,11 @@ class LikeModule {
 
             parent.postMessage(message, "*");
         });
-
     }
 
-    setGetLoginInstance(getLoginInstance) {
+    /*setGetLoginInstance(getLoginInstance) {
         this.getLoginInstance = getLoginInstance;
-    }
+    }*/
 
     setLikes(likes, isLiked) {
         this.likeInfo = {likes: likes, isLiked: isLiked};
@@ -118,22 +114,22 @@ class LikeModule {
     }
 
     async toggleLike() {
-        this.checkGetLoginInstance();
+        //this.checkGetLoginInstance();
         if (!this.isAppAllowed) {
             this.onAllowApp();
             return;
         }
 
         const newIsLiked = !this.likeInfo.isLiked;
+        const likes = Number(this.likeInfo.likes);
         if (this.likeInfo.isLiked) {
-            this.setLikes(this.likeInfo.likes - 1, newIsLiked);
+            this.setLikes(likes - 1, newIsLiked);
             this.onDislike();
         } else {
-            this.setLikes(this.likeInfo.likes + 1, newIsLiked);
+            this.setLikes(likes + 1, newIsLiked);
             this.onLike();
         }
 
-        // todo send tx to blockchain
         // todo wait until mined, update actual like info
         if (this.onTxProgressChanged) {
             this.onTxProgressChanged(true);
@@ -144,19 +140,16 @@ class LikeModule {
     }
 
     async updateLikeInfo() {
-        this.checkGetLoginInstance();
-        this.getParentData('getUserStatisticsUrl', this.url)
-            .then(data => {
-                //console.log(data);
-                this.setLikes(data.resourceStatistics.reactions, data.isLiked);
-            });
+        //this.checkGetLoginInstance();
+        const data = await this.callMethod('getUserStatisticsUrl', this.url)
+        this.setLikes(data.resourceStatistics.reactions, data.isLiked);
     }
 
-    checkGetLoginInstance() {
+    /*checkGetLoginInstance() {
         if (!this.getLoginInstance) {
             throw new Error('getLoginInstance not found');
         }
-    }
+    }*/
 }
 
 (new LikeModule()).init();
