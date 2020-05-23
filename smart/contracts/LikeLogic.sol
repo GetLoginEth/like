@@ -79,6 +79,15 @@ contract LikeLogic {
         likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
     }
 
+    function _decrementResourceUrl(bytes32 urlHash) private {
+        bytes32 resourceIdKey = getUrlHashKey(urlHash);
+        LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
+        resourceIdStatistics.reactions--;
+        resourceIdStatistics.urlHash = urlHash;
+        resourceIdStatistics.isActive = true;
+        likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
+    }
+
     function _preventDoubleLikeUrl(bytes32 usernameHash, bytes32 urlHash, bool result) private {
         bytes32 userLikeKey = getUserLikeUrlKey(usernameHash, urlHash);
         require(likeStorage.getUserLike(userLikeKey) == false, "Already liked");
@@ -134,16 +143,6 @@ contract LikeLogic {
         _sendDonation(msg.value, donateAddress);
     }
 
-    function likeUrl(bytes32 urlHash, address payable donateAddress) payable public {
-        bytes32 usernameHash = getGLUsernameHash(msg.sender);
-
-        bytes32 key = getUserLikeUrlKey(usernameHash, urlHash);
-        require(likeStorage.getUserLike(key) == false, "Already liked");
-        likeStorage.setUserLike(key, true);
-        _incrementResourceUrl(urlHash, msg.value);
-        _sendDonation(msg.value, donateAddress);
-    }
-
     function unlike(uint resourceTypeId, bytes32 resourceIdHash) public {
         LikeStorage.ResourceType memory resourceType = validateGetResourceType(resourceTypeId);
         bytes32 usernameHash = getGLUsernameHash(msg.sender);
@@ -160,6 +159,25 @@ contract LikeLogic {
         resourceIdStatistics.resourceIdHash = resourceIdHash;
         resourceIdStatistics.isActive = true;
         likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
+    }
+
+    function likeUrl(bytes32 urlHash, address payable donateAddress) payable public {
+        bytes32 usernameHash = getGLUsernameHash(msg.sender);
+
+        bytes32 key = getUserLikeUrlKey(usernameHash, urlHash);
+        require(likeStorage.getUserLike(key) == false, "Already liked");
+        likeStorage.setUserLike(key, true);
+        _incrementResourceUrl(urlHash, msg.value);
+        _sendDonation(msg.value, donateAddress);
+    }
+
+    function unlikeUrl(bytes32 urlHash) payable public {
+        bytes32 usernameHash = getGLUsernameHash(msg.sender);
+
+        bytes32 key = getUserLikeUrlKey(usernameHash, urlHash);
+        require(likeStorage.getUserLike(key) == true, "User not liked this content");
+        likeStorage.setUserLike(key, false);
+        _decrementResourceUrl(urlHash);
     }
 
     /* Getters */
@@ -184,6 +202,9 @@ contract LikeLogic {
         return GetLoginLogic(GLStorage.logicAddress()).getUsernameByAddress(_address);
     }
 
+    /**
+    Get statistics by keccak256(url) hash which relate to resourceTypeId
+    **/
     function getResourceIdStatistics(uint resourceTypeId, bytes32 resourceIdHash) public view returns (LikeStorage.ResourceIdStatistics memory){
         bytes32 key = getResourceIdKey(resourceTypeId, resourceIdHash);
 

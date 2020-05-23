@@ -90,61 +90,6 @@ contract("Like", async accounts => {
             assert.equal(web3.utils.fromWei(afterDonateLikeInfo.donates, "ether"), "0.111", "Incorrect isActive");
         });
 
-        it("Like by URL", async () => {
-            // https://www.youtube.com/watch?v=GBkf5arRZIQ
-            const url1 = "https://www.youtube.com/watch?v=GBkf5arRZIQ";
-            const url2 = "https://www.youtube.com/watch?v=GBkf5arRZIZ";
-            const url1Hash = web3.utils.keccak256(url1);
-            const url2Hash = web3.utils.keccak256(url2);
-
-            // get initial state
-            const oldLikeInfo = await likeLogic.getResourceIdStatisticsUrl(url1Hash);
-            assert.equal(oldLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
-            assert.equal(oldLikeInfo.resourceIdHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect resourceIdHash");
-            assert.equal(oldLikeInfo.urlHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect urlHash");
-            assert.equal(oldLikeInfo.reactions, '0', "Incorrect reactions");
-            assert.equal(oldLikeInfo.isActive, false, "Incorrect isActive");
-
-            // like resource without donate
-            await likeLogic.likeUrl(url1Hash, "0x0000000000000000000000000000000000000000");
-            const newLikeInfo = await likeLogic.getResourceIdStatisticsUrl(url1Hash);
-            assert.equal(newLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
-            assert.equal(newLikeInfo.urlHash, url1Hash, "Incorrect resourceIdHash");
-            assert.equal(newLikeInfo.reactions, 1, "Incorrect reactions");
-            assert.equal(newLikeInfo.isActive, true, "Incorrect isActive");
-
-            // check double like
-            await willFail(likeLogic.likeUrl(url1Hash, "0x0000000000000000000000000000000000000000"), 'Already liked');
-
-            // like from not registered user
-            await willFail(likeLogic.likeUrl(url1Hash, "0x0000000000000000000000000000000000000000", {from: accounts[9]}), 'User with this address not found');
-
-            // like with donate
-            const destinationAddress = accounts[6];
-            let balance = await web3.eth.getBalance(destinationAddress);
-            assert.equal(web3.utils.fromWei(balance, "ether"), "100", "Incorrect initial balance");
-            await likeLogic.likeUrl(url2Hash, destinationAddress, {
-                from: accounts[0],
-                value: web3.utils.toWei("0.111", "ether")
-            });
-            balance = await web3.eth.getBalance(destinationAddress);
-            assert.equal(web3.utils.fromWei(balance, "ether"), "100.111", "Incorrect balance");
-
-            // check donate counter after donate
-            const afterDonateLikeInfo = await likeLogic.getResourceIdStatisticsUrl(url2Hash);
-            assert.equal(afterDonateLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
-            assert.equal(afterDonateLikeInfo.urlHash, url2Hash, "Incorrect resourceIdHash");
-            assert.equal(afterDonateLikeInfo.reactions, 1, "Incorrect reactions");
-            assert.equal(afterDonateLikeInfo.isActive, true, "Incorrect isActive");
-            assert.equal(web3.utils.fromWei(afterDonateLikeInfo.donates, "ether"), "0.111", "Incorrect isActive");
-
-            // check like info with user like
-            const userLikeInfo = await likeLogic.getUserStatisticsUrl(adminHash, url2Hash);
-            assert.equal(userLikeInfo.resourceStatistics.urlHash, url2Hash, "Incorrect urlHash");
-            assert.equal(userLikeInfo.usernameHash, adminHash, "Incorrect usernameHash");
-            assert.equal(userLikeInfo.isLiked, true, "Incorrect isLiked");
-        });
-
         it("Unlike", async () => {
             // https://www.youtube.com/watch?v=Y-65T0YBOm4
             const videoId = "65T0YBOm4";
@@ -205,6 +150,131 @@ contract("Like", async accounts => {
             const afterDonateLikeInfo = await likeLogic.getResourceIdStatistics(1, videoIdHash);
             assert.equal(afterDonateLikeInfo.resourceTypeId, 1, "Incorrect resourceTypeId");
             assert.equal(afterDonateLikeInfo.resourceIdHash, videoIdHash, "Incorrect resourceIdHash");
+            assert.equal(afterDonateLikeInfo.reactions, 1, "Incorrect reactions");
+            assert.equal(afterDonateLikeInfo.isActive, true, "Incorrect isActive");
+            assert.equal(web3.utils.fromWei(afterDonateLikeInfo.donates, "ether"), "0.123", "Incorrect isActive");
+        });
+
+        it("Like by URL", async () => {
+            // https://www.youtube.com/watch?v=GBkf5arRZIQ
+            const url1 = "https://www.youtube.com/watch?v=GBkf5arRZIQ";
+            const url2 = "https://www.youtube.com/watch?v=GBkf5arRZIZ";
+            const url1Hash = web3.utils.keccak256(url1);
+            const url2Hash = web3.utils.keccak256(url2);
+
+            // get initial state
+            const oldLikeInfo = await likeLogic.getResourceIdStatisticsUrl(url1Hash);
+            assert.equal(oldLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
+            assert.equal(oldLikeInfo.resourceIdHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect resourceIdHash");
+            assert.equal(oldLikeInfo.urlHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect urlHash");
+            assert.equal(oldLikeInfo.reactions, '0', "Incorrect reactions");
+            assert.equal(oldLikeInfo.isActive, false, "Incorrect isActive");
+
+            // like resource without donate
+            await likeLogic.likeUrl(url1Hash, "0x0000000000000000000000000000000000000000");
+            const newLikeInfo = await likeLogic.getResourceIdStatisticsUrl(url1Hash);
+            assert.equal(newLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
+            assert.equal(newLikeInfo.urlHash, url1Hash, "Incorrect resourceIdHash");
+            assert.equal(newLikeInfo.reactions, 1, "Incorrect reactions");
+            assert.equal(newLikeInfo.isActive, true, "Incorrect isActive");
+
+            // check double like
+            await willFail(likeLogic.likeUrl(url1Hash, "0x0000000000000000000000000000000000000000"), 'Already liked');
+
+            // like from not registered user
+            await willFail(likeLogic.likeUrl(url1Hash, "0x0000000000000000000000000000000000000000", {from: accounts[9]}), 'User with this address not found');
+
+            // like with donate
+            const destinationAddress = accounts[6];
+            let balance = await web3.eth.getBalance(destinationAddress);
+            assert.equal(web3.utils.fromWei(balance, "ether"), "100", "Incorrect initial balance");
+            await likeLogic.likeUrl(url2Hash, destinationAddress, {
+                from: accounts[0],
+                value: web3.utils.toWei("0.111", "ether")
+            });
+            balance = await web3.eth.getBalance(destinationAddress);
+            assert.equal(web3.utils.fromWei(balance, "ether"), "100.111", "Incorrect balance");
+
+            // check donate counter after donate
+            const afterDonateLikeInfo = await likeLogic.getResourceIdStatisticsUrl(url2Hash);
+            assert.equal(afterDonateLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
+            assert.equal(afterDonateLikeInfo.urlHash, url2Hash, "Incorrect resourceIdHash");
+            assert.equal(afterDonateLikeInfo.reactions, 1, "Incorrect reactions");
+            assert.equal(afterDonateLikeInfo.isActive, true, "Incorrect isActive");
+            assert.equal(web3.utils.fromWei(afterDonateLikeInfo.donates, "ether"), "0.111", "Incorrect isActive");
+
+            // check like info with user like
+            const userLikeInfo = await likeLogic.getUserStatisticsUrl(adminHash, url2Hash);
+            assert.equal(userLikeInfo.resourceStatistics.urlHash, url2Hash, "Incorrect urlHash");
+            assert.equal(userLikeInfo.usernameHash, adminHash, "Incorrect usernameHash");
+            assert.equal(userLikeInfo.isLiked, true, "Incorrect isLiked");
+        });
+
+        it("Unlike by URL", async () => {
+            // https://www.youtube.com/watch?v=Y-65T0YBOm4
+            const url1 = "https://www.youtube.com/watch?v=IkgsUuFmqsQ";
+            const url2 = "https://www.youtube.com/watch?v=RhMYBfF7-hE";
+            const urlHash1 = web3.utils.keccak256(url1);
+            const urlHash2 = web3.utils.keccak256(url2);
+            const oneLikeInfo = await likeLogic.getResourceIdStatisticsUrl(urlHash1);
+            assert.equal(oneLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
+            assert.equal(oneLikeInfo.resourceIdHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect resourceIdHash");
+            assert.equal(oneLikeInfo.urlHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect urlHash");
+            assert.equal(oneLikeInfo.reactions, '0', "Incorrect reactions");
+            assert.equal(oneLikeInfo.isActive, false, "Incorrect isActive");
+
+            await likeLogic.likeUrl(urlHash1, "0x0000000000000000000000000000000000000000");
+            const twoLikeInfo = await likeLogic.getResourceIdStatisticsUrl(urlHash1);
+            assert.equal(twoLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
+            assert.equal(twoLikeInfo.resourceIdHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect resourceIdHash");
+            assert.equal(twoLikeInfo.urlHash, urlHash1, "Incorrect urlHash");
+            assert.equal(twoLikeInfo.reactions, 1, "Incorrect reactions");
+            assert.equal(twoLikeInfo.isActive, true, "Incorrect isActive");
+
+
+            // unlike from not registered account
+            await willFail(likeLogic.unlikeUrl( urlHash1, {
+                from: accounts[9],
+                //value: web3.utils.toWei("0", "ether")
+            }), 'User with this address not found');
+
+            // unlike from registered account, but not liked this content
+            await willFail(likeLogic.unlikeUrl( urlHash1, {
+                from: accounts[1],
+                //value: web3.utils.toWei("0", "ether")
+            }), 'User not liked this content');
+
+            // unlike from registered account never liked content
+            await willFail(likeLogic.unlikeUrl( urlHash2, {
+                from: accounts[0],
+                //value: web3.utils.toWei("0", "ether")
+            }), 'User not liked this content');
+
+            await likeLogic.unlikeUrl( urlHash1);
+            const threeLikeInfo = await likeLogic.getResourceIdStatisticsUrl( urlHash1);
+            assert.equal(threeLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
+            assert.equal(threeLikeInfo.resourceIdHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect resourceIdHash");
+            assert.equal(threeLikeInfo.urlHash, urlHash1, "Incorrect resourceIdHash");
+            assert.equal(threeLikeInfo.reactions, 0, "Incorrect reactions");
+            assert.equal(threeLikeInfo.isActive, true, "Incorrect isActive");
+            assert.equal(threeLikeInfo.donates, 0, "Incorrect isActive");
+
+            // like with donate after unlike
+            const destinationAddress = accounts[7];
+            let balance = await web3.eth.getBalance(destinationAddress);
+            assert.equal(web3.utils.fromWei(balance, "ether"), "100.123", "Incorrect balance");
+
+            await likeLogic.likeUrl( urlHash1, destinationAddress, {
+                value: web3.utils.toWei("0.123", "ether")
+            });
+            balance = await web3.eth.getBalance(destinationAddress);
+            assert.equal(web3.utils.fromWei(balance, "ether"), "100.246", "Incorrect balance");
+
+            // check donate counter after donate
+            const afterDonateLikeInfo = await likeLogic.getResourceIdStatisticsUrl( urlHash1);
+            assert.equal(afterDonateLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
+            assert.equal(afterDonateLikeInfo.resourceIdHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect resourceIdHash");
+            assert.equal(afterDonateLikeInfo.urlHash, urlHash1, "Incorrect resourceIdHash");
             assert.equal(afterDonateLikeInfo.reactions, 1, "Incorrect reactions");
             assert.equal(afterDonateLikeInfo.isActive, true, "Incorrect isActive");
             assert.equal(web3.utils.fromWei(afterDonateLikeInfo.donates, "ether"), "0.123", "Incorrect isActive");
