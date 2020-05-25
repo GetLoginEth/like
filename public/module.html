@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>GetLogin Like Module</title>
 </head>
-<body>
+<body class="body-unlocked">
 <style>
     html, body, div, span, applet, object, iframe,
     h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -68,6 +68,7 @@
     }
 
     #tx-status-progress {
+        margin-left: 8px;
         display: none;
     }
 
@@ -79,7 +80,6 @@
         width: 24px;
         height: 24px;
         margin-right: 8px;
-        /*background-size: 25px;*/
         font-weight: normal;
         font-style: normal;
         font-size: 24px;
@@ -119,6 +119,16 @@
             -webkit-transform: rotate(359deg);
         }
     }
+
+    .body-locked {
+        pointer-events: none;
+        opacity: 0.4;
+    }
+
+    .body-unlocked {
+        pointer-events:auto;
+        opacity: 1;
+    }
 </style>
 
 <div class="do-like">
@@ -141,7 +151,6 @@
      * @param {LikeModule} module
      */
     function webInit(module) {
-        //module.setGetLoginInstance({});
         module.onLikesChanged = (likes, isLiked) => {
             document.getElementById('likes-count').innerText = likes > 0 ? likes : '';
             const classList = document.querySelector('.like-btn').classList;

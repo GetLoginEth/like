@@ -1169,21 +1169,30 @@ class LikeInjector {
             }
 
             if (event === 'like' && this.onLike[id]) {
+                this.sendEventsAll('lock-blockchain-actions', {id});
                 this.onLike[id](data);
                 this.getLoginInstance.keccak256(data.url)
                     .then(urlHash => {
                         console.log('urlHash', urlHash);
-                        this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {});
+                        this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+                            .then(data => {
+                                this.sendEventsAll('unlock-blockchain-actions', {id});
+                            });
                     });
             } else if (event === 'unlike' && this.onUnlike[id]) {
+                this.sendEventsAll('lock-blockchain-actions', {id});
                 this.onUnlike[id](data);
                 this.getLoginInstance.keccak256(data.url)
                     .then(urlHash => {
                         console.log('urlHash', urlHash);
-                        this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'unlikeUrl', [urlHash], {});
+                        this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
+                            .then(data => {
+                                this.sendEventsAll('unlock-blockchain-actions', {id});
+                            });
                     });
             } else if (event === 'allowApp') {
-                const newWindow = window.open(this.allowAppUrl);
+                // todo after success login - update params in LikeModule about url allowed (check LS access_token or wait window close)
+                window.open(this.allowAppUrl);
             }
 
             //console.log('received message', id, event, data);
@@ -1222,6 +1231,18 @@ class LikeInjector {
         this.iframes[this.moduleId] = iframe;
 
         this.moduleId++;
+    }
+
+    sendEventsAll(event, data = {}) {
+        const keys = Object.keys(this.iframes);
+        keys.forEach(key => {
+            this.iframes[key].contentWindow.postMessage({
+                id: key,
+                type: 'like-module-event',
+                event,
+                data
+            }, '*');
+        });
     }
 }
 

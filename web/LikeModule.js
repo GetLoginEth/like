@@ -1,10 +1,24 @@
 'use strict'
 
 class LikeModule {
+    urlParams;
+    isAppAllowed;
+    id;
+    mode;
+    url;
+    resourceType;
+    resourceId;
+    likeInfo = {};
+    // when likes count changed
+    onLikesChanged = null;
+    // when status of transaction changed
+    onTxProgressChanged = null;
+    sendMessageTimeout = 60;
+
     constructor() {
         this.urlParams = new URLSearchParams(window.location.search);
         this.isAppAllowed = this.urlParams.get('isAppAllowed') === 'true';
-        this.id = this.urlParams.get('id');
+        this.id = Number(this.urlParams.get('id'));
         this.mode = this.urlParams.get('mode');
         this.url = this.urlParams.get('url');
         this.resourceType = this.urlParams.get('resourceType');
@@ -15,17 +29,42 @@ class LikeModule {
         } else if (this.mode === 'resource' && (!this.resourceType || !this.resourceId)) {
             throw new Error('Incorrect resource data');
         }
+    }
 
-        this.likeInfo = {};
-        // when likes count changed
-        this.onLikesChanged = null;
-        // when status of transaction changed
-        this.onTxProgressChanged = null;
-        this.getLoginInstance = null;
-        this.sendMessageTimeout = 60;
+    _likeListener = (e) => {
+        if (typeof e.data !== 'object' || Number(e.data.id) !== this.id || e.data.type !== 'like-module-event') {
+            return;
+        }
+
+        console.log(e);
+        const event = e.data.event;
+        const data = e.data.data;
+        if (event === 'lock-blockchain-actions') {
+            // todo move all code to onTxProgressChanged?
+            if (Number(data.id) === this.id) {
+                if (this.onTxProgressChanged) {
+                    this.onTxProgressChanged(true);
+                }
+            }
+
+            const list = document.body.classList;
+            list.remove('body-unlocked')
+            list.add('body-locked');
+        } else if (event === 'unlock-blockchain-actions') {
+            if (Number(data.id) === this.id) {
+                if (this.onTxProgressChanged) {
+                    this.onTxProgressChanged(false);
+                }
+            }
+
+            const list = document.body.classList;
+            list.remove('body-locked')
+            list.add('body-unlocked');
+        }
     }
 
     init() {
+        window.addEventListener('message', this._likeListener);
         if (window && window._onLikeModuleLoaded) {
             window._onLikeModuleLoaded(this);
             delete window._onLikeModuleLoaded;
@@ -102,10 +141,6 @@ class LikeModule {
         });
     }
 
-    /*setGetLoginInstance(getLoginInstance) {
-        this.getLoginInstance = getLoginInstance;
-    }*/
-
     setLikes(likes, isLiked) {
         this.likeInfo = {likes: likes, isLiked: isLiked};
         if (this.onLikesChanged) {
@@ -114,7 +149,6 @@ class LikeModule {
     }
 
     async toggleLike() {
-        //this.checkGetLoginInstance();
         if (!this.isAppAllowed) {
             this.onAllowApp();
             return;
@@ -130,26 +164,25 @@ class LikeModule {
             this.onLike();
         }
 
+        // todo after tx complete - update actual likes count (can be changed while liked)
+        // todo block ui while tx not complete because tx replacement
         // todo wait until mined, update actual like info
-        if (this.onTxProgressChanged) {
+        /*if (this.onTxProgressChanged) {
             this.onTxProgressChanged(true);
             setTimeout(_ => {
                 this.onTxProgressChanged(false);
             }, 2000);
-        }
+        }*/
     }
 
     async updateLikeInfo() {
-        //this.checkGetLoginInstance();
-        const data = await this.callMethod('getUserStatisticsUrl', this.url)
-        this.setLikes(data.resourceStatistics.reactions, data.isLiked);
-    }
+        try {
+            const data = await this.callMethod('getUserStatisticsUrl', this.url)
+            this.setLikes(data.resourceStatistics.reactions, data.isLiked);
+        } catch (e) {
 
-    /*checkGetLoginInstance() {
-        if (!this.getLoginInstance) {
-            throw new Error('getLoginInstance not found');
         }
-    }*/
+    }
 }
 
 (new LikeModule()).init();
