@@ -1082,12 +1082,9 @@ class LikeInjector {
     iframes = {};
     isAppAllowed = false;
     allowAppUrl = null;
-
-    constructor() {
-    }
+    appId = 3;
 
     init() {
-        let appId = 3;
         let getLoginApiUrl = "https://localhost:3000/api/last.js";
         let getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
         let redirectUrl = 'https://localhost:1234/token.html';
@@ -1104,7 +1101,7 @@ class LikeInjector {
 
         window._onGetLoginApiLoaded = async (instance) => {
             console.log('GetLogin loaded', instance);
-            const data = await instance.init(appId, getLoginUrl, redirectUrl, accessToken)
+            const data = await instance.init(this.appId, getLoginUrl, redirectUrl, accessToken)
             console.log('GetLogin init data', data);
             this.isAppAllowed = data.data.is_client_allowed;
             if (this.isAppAllowed) {
@@ -1144,59 +1141,48 @@ class LikeInjector {
             const data = e.data.data;
             if (type === 'like-module-get') {
                 if (event === 'getUserStatisticsUrl') {
-                    const receiveInfo = async () => {
-                        const urlHash = await this.getLoginInstance.keccak256(data);
-                        const usernameHash = (await this.getLoginInstance.getUserInfo())['usernameHash'];
-                        console.log(urlHash, usernameHash);
-                        return this.getLoginInstance.callContractMethod(this.likeLogicAddress, event, usernameHash, urlHash);
-                    };
-                    receiveInfo()
+                    this._getUserStatisticsUrl(data)
                         .then(data => {
-                            //console.log(data)
                             this.iframes[id].contentWindow.postMessage({
                                 id: requestId,
-                                //result: 'hello world (' + event + ') + ' + data
                                 result: data
                             }, '*');
                         });
-
-                    return;
+                }
+            } else if (type === 'like-module') {
+                if (event === 'like' && this.onLike[id]) {
+                    this._sendLike(id, data).then();
+                } else if (event === 'unlike' && this.onUnlike[id]) {
+                    this._sendUnlike(id, data).then();
+                } else if (event === 'allowApp') {
+                    // todo after success login - update params in LikeModule about url allowed (check LS access_token or wait window close)
+                    window.open(this.allowAppUrl);
                 }
             }
-
-            if (type !== 'like-module') {
-                return;
-            }
-
-            if (event === 'like' && this.onLike[id]) {
-                this.sendEventsAll('lock-blockchain-actions', {id});
-                this.onLike[id](data);
-                this.getLoginInstance.keccak256(data.url)
-                    .then(urlHash => {
-                        console.log('urlHash', urlHash);
-                        this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
-                            .then(data => {
-                                this.sendEventsAll('unlock-blockchain-actions', {id});
-                            });
-                    });
-            } else if (event === 'unlike' && this.onUnlike[id]) {
-                this.sendEventsAll('lock-blockchain-actions', {id});
-                this.onUnlike[id](data);
-                this.getLoginInstance.keccak256(data.url)
-                    .then(urlHash => {
-                        console.log('urlHash', urlHash);
-                        this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
-                            .then(data => {
-                                this.sendEventsAll('unlock-blockchain-actions', {id});
-                            });
-                    });
-            } else if (event === 'allowApp') {
-                // todo after success login - update params in LikeModule about url allowed (check LS access_token or wait window close)
-                window.open(this.allowAppUrl);
-            }
-
-            //console.log('received message', id, event, data);
         }, false);
+    }
+
+    async _getUserStatisticsUrl(data) {
+        const urlHash = await this.getLoginInstance.keccak256(data);
+        const usernameHash = (await this.getLoginInstance.getUserInfo())['usernameHash'];
+        //console.log(urlHash, usernameHash);
+        return this.getLoginInstance.callContractMethod(this.likeLogicAddress, 'getUserStatisticsUrl', usernameHash, urlHash);
+    }
+
+    async _sendLike(id, data) {
+        this.sendEventsAll('lock-blockchain-actions', {id});
+        this.onLike[id](data);
+        const urlHash = await this.getLoginInstance.keccak256(data.url)
+        const response = await this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+        this.sendEventsAll('unlock-blockchain-actions', {id, data: response});
+    }
+
+    async _sendUnlike(id, data) {
+        this.sendEventsAll('lock-blockchain-actions', {id});
+        this.onUnlike[id](data);
+        const urlHash = await this.getLoginInstance.keccak256(data.url)
+        const response = await this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'unlikeUrl', [urlHash], {resolveMethod: 'mined'})
+        this.sendEventsAll('unlock-blockchain-actions', {id, data: response});
     }
 
     draw(params) {
@@ -1245,6 +1231,5 @@ class LikeInjector {
         });
     }
 }
-
 
 (new LikeInjector()).init();

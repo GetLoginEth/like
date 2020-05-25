@@ -31,6 +31,10 @@ class LikeModule {
         }
     }
 
+    _randomUid() {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
+
     _likeListener = (e) => {
         if (typeof e.data !== 'object' || Number(e.data.id) !== this.id || e.data.type !== 'like-module-event') {
             return;
@@ -98,10 +102,6 @@ class LikeModule {
         });
     }
 
-    _randomUid() {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    }
-
     sendEvent(event, data) {
         parent.postMessage({id: this.id, type: 'like-module', event, data}, "*");
     }
@@ -167,12 +167,7 @@ class LikeModule {
         // todo after tx complete - update actual likes count (can be changed while liked)
         // todo block ui while tx not complete because tx replacement
         // todo wait until mined, update actual like info
-        /*if (this.onTxProgressChanged) {
-            this.onTxProgressChanged(true);
-            setTimeout(_ => {
-                this.onTxProgressChanged(false);
-            }, 2000);
-        }*/
+
     }
 
     async updateLikeInfo() {
