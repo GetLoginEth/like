@@ -6,6 +6,8 @@ Last uploaded version to swarm (31.05.20). Swarm hash: ```96d84e31f04fcf8265c3f8
 
 This project uses [GetLogin](https://github.com/GetLoginEth/login) for interaction with blockchain.
 
+You can try Chrome Extension to like any page: [Like Chrome Extension](https://github.com/GetLoginEth/like-chrome).
+
 Example with integrated Like module: https://swarm-gateways.net/bzz:/[HASH]/example.html
 
 
