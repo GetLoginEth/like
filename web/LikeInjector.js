@@ -1099,6 +1099,11 @@ class LikeInjector {
             redirectUrl = redirectUrl.replace(exploded[exploded.length - 1], '') + 'token.html';
         }
 
+        if (window._onLikeInjectorPreLoaded) {
+            window._onLikeInjectorPreLoaded(this);
+            delete window._onLikeInjectorPreLoaded;
+        }
+
         window._onGetLoginApiLoaded = async (instance) => {
             console.log('GetLogin loaded', instance);
             const data = await instance.init(this.appId, getLoginUrl, redirectUrl, accessToken)
@@ -1118,7 +1123,7 @@ class LikeInjector {
             });
             this.likeLogicAddress = await this.getLoginInstance.callContractMethod(this.likeStorageAddress, 'logicAddress');
             this.getLoginInstance.setClientAbi(this.likeLogicAbi);
-            if (window && window._onLikeInjectorLoaded) {
+            if (window._onLikeInjectorLoaded) {
                 window._onLikeInjectorLoaded(this);
                 delete window._onLikeInjectorLoaded;
             }

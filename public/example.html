@@ -42,8 +42,13 @@
 </div>
 
 <script>
-    // onLikeInjectorLoaded will call once and remove after LikeInjector.js loaded
-    window._onLikeInjectorLoaded = (instance) => {
+    // _onLikeInjectorPreLoaded will call once and remove after LikeInjector.js loaded
+    window._onLikeInjectorPreLoaded = instance => {
+        // todo load empty likes
+    };
+
+    // _onLikeInjectorLoaded will call once and remove after GetLogin loaded and init with LikeInjector
+    window._onLikeInjectorLoaded = instance => {
         console.log('Example like plugin loaded');
         instance.draw({
             selector: '#like1',
