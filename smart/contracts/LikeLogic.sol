@@ -130,6 +130,7 @@ contract LikeLogic {
 
         likeStorage.setResourceType(id, resource);
         likeStorage.incrementResourceId();
+        likeStorage.emitEventResourceTypeCreated(id, ownerUsernameHash);
     }
 
     function like(uint resourceTypeId, bytes32 resourceIdHash, address payable donateAddress) payable public {

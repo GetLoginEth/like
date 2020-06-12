@@ -13,6 +13,7 @@ contract LikeStorage {
 
     event EventLikeUrl(bytes32 indexed urlHash);
     event EventLikeResource(uint indexed resourceType, bytes32 indexed resourceIdHash);
+    event EventResourceTypeCreated(uint indexed resourceType, bytes32 indexed usernameHash);
 
     struct ResourceType {
         uint id;
@@ -114,5 +115,9 @@ contract LikeStorage {
 
     function emitEventLikeResource(uint resourceType, bytes32 resourceIdHash) onlyLogicAddress public {
         emit EventLikeResource(resourceType, resourceIdHash);
+    }
+
+    function emitEventResourceTypeCreated(uint resourceType, bytes32 usernameHash) onlyLogicAddress public {
+        emit EventResourceTypeCreated(resourceType, usernameHash);
     }
 }
