@@ -1,8 +1,11 @@
 'use strict'
 
 class LikeInjector {
+    // todo move to global settings shared with other apps
     likeStorageAddress = '0x6A7c14bD5384e2eb8515a5B7298cF1ec5d63aD59';
+    // todo move to global settings shared with other apps
     likeLogicAddress = null;
+    // todo move to global settings shared with other apps
     likeStorageAbi = [
         {
             "inputs": [],
@@ -528,6 +531,7 @@ class LikeInjector {
             "type": "function"
         }
     ];
+    // todo move to global settings shared with other apps
     likeLogicAbi = [
         {
             "inputs": [
