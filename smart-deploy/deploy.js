@@ -45,7 +45,6 @@ async function start() {
     const accounts = await web3.eth.getAccounts();
     console.log('Attempting to deploy from account', accounts[0]);
     let result = null;
-    // todo set correct address after deploy (here only default address)
     let storageContract = new web3.eth.Contract(abiStorage, settings.likeStorageAddress);
     if (!settings.isUpdateLogicOnly) {
         console.log('Publish storage');
