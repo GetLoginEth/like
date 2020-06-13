@@ -13,6 +13,8 @@
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.1",
     "fs": "^0.0.1-security",
+    "solc": "^0.6.10",
+    "truffle-hdwallet-provider": "^1.0.17",
     "web3": "^1.2.9",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11",
