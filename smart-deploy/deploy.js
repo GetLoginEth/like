@@ -8,6 +8,8 @@ async function start() {
     console.log('Is only update logic: ', settings.isUpdateLogicOnly);
     const likeStoragePath = path.resolve(__dirname, '../', 'smart', 'contracts', 'LikeStorage.sol');
     const likeLogicPath = path.resolve(__dirname, '../', 'smart', 'contracts', 'LikeLogic.sol');
+    const outAbiStoragePath = path.resolve(__dirname, '../', 'web', 'LikeStorageAbi.json');
+    const outAbiLogicPath = path.resolve(__dirname, '../', 'web', 'LikeLogicAbi.json');
     const sourceLikeStorage = fs.readFileSync(likeStoragePath, 'utf8');
     const sourceLikeLogic = fs.readFileSync(likeLogicPath, 'utf8');
     const input = {
@@ -47,12 +49,15 @@ async function start() {
     let storageContract = new web3.eth.Contract(abiStorage, settings.likeStorageAddress);
     if (!settings.isUpdateLogicOnly) {
         console.log('Publish storage');
-        // todo get gas before deploy
         result = await storageContract
             .deploy({data: '0x' + bytecodeStorage})
-            .send({/*gas: '3000000',*/ from: accounts[0]});
+            .send({from: accounts[0]});
         storageContract.options.address = result.options.address;
         console.log('Storage contract deployed to', result.options.address);
+        fs.writeFileSync(outAbiStoragePath, JSON.stringify({
+            abi: abiStorage,
+            address: result.options.address
+        }));
     }
 
     const likeStorageParamAddress = settings.isUpdateLogicOnly ? settings.likeStorageAddress : result.options.address;
@@ -62,10 +67,14 @@ async function start() {
             data: '0x' + bytecodeLogic,
             arguments: [likeStorageParamAddress, settings.getLoginStorageAddress]
         })
-        .send({/*gas: '3000000',*/ from: accounts[0]});
+        .send({from: accounts[0]});
     console.log('Logic contract deployed to', result.options.address);
     console.log('Set logic address to storage contract');
     await storageContract.methods.setLogicAddress(result.options.address).send({from: accounts[0]});
+    fs.writeFileSync(outAbiLogicPath, JSON.stringify({
+        abi: abiLogic,
+        address: result.options.address
+    }));
     console.log('Complete!');
 }
 
