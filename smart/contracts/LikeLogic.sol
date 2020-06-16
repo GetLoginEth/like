@@ -133,6 +133,16 @@ contract LikeLogic {
         likeStorage.emitEventResourceTypeCreated(id, ownerUsernameHash);
     }
 
+    function editResourceType(uint id, string memory title, string memory description, string memory url) public {
+        bytes32 ownerUsernameHash = getGLUsernameHash(msg.sender);
+        LikeStorage.ResourceType memory resource = validateGetResourceType(id);
+        require(resource.ownerUsernameHash == ownerUsernameHash, "Do not have rights for editing");
+        resource.title = title;
+        resource.description = description;
+        resource.url = url;
+        likeStorage.setResourceType(id, resource);
+    }
+
     function like(uint resourceTypeId, bytes32 resourceIdHash, address payable donateAddress) payable public {
         bytes32 usernameHash = getGLUsernameHash(msg.sender);
         bytes32 userLikeKey = getUserLikeResourceKey(usernameHash, resourceTypeId, resourceIdHash);

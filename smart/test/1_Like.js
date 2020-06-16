@@ -39,6 +39,19 @@ contract("Like", async accounts => {
             assert.equal(data.title, resource.title, "Incorrect title");
             assert.equal(data.description, resource.description, "Incorrect description");
             assert.equal(data.url, resource.url, "Incorrect url");
+
+            // edit from not owner
+            await willFail(likeLogic.editResourceType(1, "new title", "new description", "new url", {
+                from: accounts[1],
+            }), 'Do not have rights for editing');
+
+            // edit from owner
+            await likeLogic.editResourceType(1, "new title", "new description", "new url");
+            const newData = await likeStorage.getResourceType(1);
+            assert.equal(newData.id, 1, "Incorrect id");
+            assert.equal(newData.title, "new title", "Incorrect title");
+            assert.equal(newData.description, "new description", "Incorrect description");
+            assert.equal(newData.url, "new url", "Incorrect url");
         });
 
         it("Like by resource", async () => {
@@ -233,25 +246,25 @@ contract("Like", async accounts => {
 
 
             // unlike from not registered account
-            await willFail(likeLogic.unlikeUrl( urlHash1, {
+            await willFail(likeLogic.unlikeUrl(urlHash1, {
                 from: accounts[9],
                 //value: web3.utils.toWei("0", "ether")
             }), 'User with this address not found');
 
             // unlike from registered account, but not liked this content
-            await willFail(likeLogic.unlikeUrl( urlHash1, {
+            await willFail(likeLogic.unlikeUrl(urlHash1, {
                 from: accounts[1],
                 //value: web3.utils.toWei("0", "ether")
             }), 'User not liked this content');
 
             // unlike from registered account never liked content
-            await willFail(likeLogic.unlikeUrl( urlHash2, {
+            await willFail(likeLogic.unlikeUrl(urlHash2, {
                 from: accounts[0],
                 //value: web3.utils.toWei("0", "ether")
             }), 'User not liked this content');
 
-            await likeLogic.unlikeUrl( urlHash1);
-            const threeLikeInfo = await likeLogic.getResourceIdStatisticsUrl( urlHash1);
+            await likeLogic.unlikeUrl(urlHash1);
+            const threeLikeInfo = await likeLogic.getResourceIdStatisticsUrl(urlHash1);
             assert.equal(threeLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
             assert.equal(threeLikeInfo.resourceIdHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect resourceIdHash");
             assert.equal(threeLikeInfo.urlHash, urlHash1, "Incorrect resourceIdHash");
@@ -264,14 +277,14 @@ contract("Like", async accounts => {
             let balance = await web3.eth.getBalance(destinationAddress);
             assert.equal(web3.utils.fromWei(balance, "ether"), "100.123", "Incorrect balance");
 
-            await likeLogic.likeUrl( urlHash1, destinationAddress, {
+            await likeLogic.likeUrl(urlHash1, destinationAddress, {
                 value: web3.utils.toWei("0.123", "ether")
             });
             balance = await web3.eth.getBalance(destinationAddress);
             assert.equal(web3.utils.fromWei(balance, "ether"), "100.246", "Incorrect balance");
 
             // check donate counter after donate
-            const afterDonateLikeInfo = await likeLogic.getResourceIdStatisticsUrl( urlHash1);
+            const afterDonateLikeInfo = await likeLogic.getResourceIdStatisticsUrl(urlHash1);
             assert.equal(afterDonateLikeInfo.resourceTypeId, 0, "Incorrect resourceTypeId");
             assert.equal(afterDonateLikeInfo.resourceIdHash, '0x0000000000000000000000000000000000000000000000000000000000000000', "Incorrect resourceIdHash");
             assert.equal(afterDonateLikeInfo.urlHash, urlHash1, "Incorrect resourceIdHash");
