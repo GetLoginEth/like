@@ -165,10 +165,7 @@ contract LikeLogic {
 
         // todo move to incrementMethod and rename it
         LikeStorage.ResourceIdStatistics memory resourceIdStatistics = likeStorage.getResourceIdStatistics(resourceIdKey);
-        resourceIdStatistics.resourceTypeId = resourceTypeId;
         resourceIdStatistics.reactions--;
-        resourceIdStatistics.resourceIdHash = resourceIdHash;
-        resourceIdStatistics.isActive = true;
         likeStorage.setResourceIdStatistics(resourceIdKey, resourceIdStatistics);
     }
 
@@ -239,6 +236,14 @@ contract LikeLogic {
             resourceStatistics : getResourceIdStatisticsUrl(urlHash),
             usernameHash : usernameHash,
             isLiked : likeStorage.getUserLike(getUserLikeUrlKey(usernameHash, urlHash))
+            });
+    }
+
+    function getUserStatisticsResource(bytes32 usernameHash, uint resourceTypeId, bytes32 resourceIdHash) public view returns (UserStatistics memory){
+        return UserStatistics({
+            resourceStatistics : getResourceIdStatistics(resourceTypeId, resourceIdHash),
+            usernameHash : usernameHash,
+            isLiked : likeStorage.getUserLike(getUserLikeResourceKey(usernameHash, resourceTypeId, resourceIdHash))
             });
     }
 

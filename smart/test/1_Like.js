@@ -101,6 +101,18 @@ contract("Like", async accounts => {
             assert.equal(afterDonateLikeInfo.reactions, 1, "Incorrect reactions");
             assert.equal(afterDonateLikeInfo.isActive, true, "Incorrect isActive");
             assert.equal(web3.utils.fromWei(afterDonateLikeInfo.donates, "ether"), "0.111", "Incorrect isActive");
+
+            // check user stata for not liked user
+            const userStata = await likeLogic.getUserStatisticsResource(igorHash, 1, videoIdHash);
+            assert.equal(userStata.isLiked, false, "Incorrect isLiked");
+            assert.equal(userStata.usernameHash, igorHash, "Incorrect usernameHash");
+            assert.equal(userStata.resourceStatistics.resourceIdHash, videoIdHash, "Incorrect resourceIdHash");
+
+            // check user stata for liked user
+            const userStata2 = await likeLogic.getUserStatisticsResource(adminHash, 1, videoIdHash);
+            assert.equal(userStata2.isLiked, true, "Incorrect isLiked");
+            assert.equal(userStata2.usernameHash, adminHash, "Incorrect usernameHash");
+            assert.equal(userStata2.resourceStatistics.resourceIdHash, videoIdHash, "Incorrect resourceIdHash");
         });
 
         it("Unlike", async () => {
@@ -166,6 +178,13 @@ contract("Like", async accounts => {
             assert.equal(afterDonateLikeInfo.reactions, 1, "Incorrect reactions");
             assert.equal(afterDonateLikeInfo.isActive, true, "Incorrect isActive");
             assert.equal(web3.utils.fromWei(afterDonateLikeInfo.donates, "ether"), "0.123", "Incorrect isActive");
+
+            // check user stata for unliked user
+            await likeLogic.unlike(1, videoIdHash);
+            const userStata2 = await likeLogic.getUserStatisticsResource(adminHash, 1, videoIdHash);
+            assert.equal(userStata2.isLiked, false, "Incorrect isLiked");
+            assert.equal(userStata2.usernameHash, adminHash, "Incorrect usernameHash");
+            assert.equal(userStata2.resourceStatistics.resourceIdHash, videoIdHash, "Incorrect resourceIdHash");
         });
 
         it("Like by URL", async () => {
@@ -243,7 +262,6 @@ contract("Like", async accounts => {
             assert.equal(twoLikeInfo.urlHash, urlHash1, "Incorrect urlHash");
             assert.equal(twoLikeInfo.reactions, 1, "Incorrect reactions");
             assert.equal(twoLikeInfo.isActive, true, "Incorrect isActive");
-
 
             // unlike from not registered account
             await willFail(likeLogic.unlikeUrl(urlHash1, {

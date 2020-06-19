@@ -1,4 +1,5 @@
 'use strict'
+
 import LikeLogicAbi from './LikeLogicAbi.json';
 import LikeStorageAbi from './LikeStorageAbi.json';
 
