@@ -12,6 +12,7 @@ contract LikeStorage {
     mapping(bytes32 => bool) public userLike;
 
     event EventLikeUrl(bytes32 indexed urlHash);
+    // todo resourceType replace to resourceTypeId?
     event EventLikeResource(uint indexed resourceType, bytes32 indexed resourceIdHash);
     event EventResourceTypeCreated(uint indexed resourceType, bytes32 indexed usernameHash);
 

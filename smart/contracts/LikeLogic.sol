@@ -152,6 +152,7 @@ contract LikeLogic {
         _incrementResourceType(resourceTypeId, msg.value);
         _incrementResourceId(resourceTypeId, resourceIdHash, msg.value);
         _sendDonation(msg.value, donateAddress);
+        likeStorage.emitEventLikeResource(resourceTypeId, resourceIdHash);
     }
 
     function unlike(uint resourceTypeId, bytes32 resourceIdHash) public {
@@ -177,6 +178,7 @@ contract LikeLogic {
         likeStorage.setUserLike(key, true);
         _incrementResourceUrl(urlHash, msg.value);
         _sendDonation(msg.value, donateAddress);
+        likeStorage.emitEventLikeUrl(urlHash);
     }
 
     function unlikeUrl(bytes32 urlHash) payable public {
