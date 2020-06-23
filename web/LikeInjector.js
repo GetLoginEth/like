@@ -102,7 +102,11 @@ class LikeInjector {
 
     async _getUserStatisticsUrl(data) {
         const urlHash = await this.getLoginInstance.keccak256(data);
-        const usernameHash = (await this.getLoginInstance.getUserInfo())['usernameHash'];
+        let usernameHash = (await this.getLoginInstance.getUserInfo())['usernameHash'];
+        // set hash for not logged users
+        if (!usernameHash) {
+            usernameHash = '0x000000000000000000000000000000000000000000000000000000';
+        }
         //console.log(urlHash, usernameHash);
         return this.getLoginInstance.callContractMethod(this.likeLogicAddress, 'getUserStatisticsUrl', usernameHash, urlHash);
     }
