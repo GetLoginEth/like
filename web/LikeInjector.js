@@ -17,6 +17,9 @@ class LikeInjector {
     allowAppUrl = null;
     appId = 3;
 
+    emptyHash = '0x000000000000000000000000000000000000000000000000000000';
+    emptyWallet = '0x0000000000000000000000000000000000000000';
+
     init() {
         let getLoginApiUrl = "https://localhost:3000/api/last.js";
         let getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
@@ -105,7 +108,7 @@ class LikeInjector {
         let usernameHash = (await this.getLoginInstance.getUserInfo())['usernameHash'];
         // set hash for not logged users
         if (!usernameHash) {
-            usernameHash = '0x000000000000000000000000000000000000000000000000000000';
+            usernameHash = this.emptyHash;
         }
         //console.log(urlHash, usernameHash);
         return this.getLoginInstance.callContractMethod(this.likeLogicAddress, 'getUserStatisticsUrl', usernameHash, urlHash);
@@ -115,7 +118,7 @@ class LikeInjector {
         this.sendEventsAll('lock-blockchain-actions', {id});
         this.onLike[id](data);
         const urlHash = await this.getLoginInstance.keccak256(data.url)
-        const response = await this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'likeUrl', [urlHash, '0x0000000000000000000000000000000000000000'], {resolveMethod: 'mined'})
+        const response = await this.getLoginInstance.sendTransaction(this.likeLogicAddress, 'likeUrl', [urlHash, this.emptyWallet], {resolveMethod: 'mined'})
         this.sendEventsAll('unlock-blockchain-actions', {id, data: response});
     }
 
