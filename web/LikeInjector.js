@@ -21,13 +21,13 @@ class LikeInjector {
     emptyWallet = '0x0000000000000000000000000000000000000000';
 
     init() {
-        let getLoginApiUrl = "https://localhost:3000/api/last.js";
-        let getLoginUrl = 'https://localhost:3000/bzz:/getlogin.eth/';
+        let getLoginApiUrl = "https://getlogin.localhost:3000/api/last.js";
+        let getLoginUrl = 'https://getlogin.localhost:3000/';
         let redirectUrl = 'https://localhost:1234/token.html';
         let accessToken = localStorage.getItem('access_token');
         if (process.env.NODE_ENV === 'production') {
-            getLoginApiUrl = 'https://swarm-gateways.net/bzz:/getlogin.eth/api/last.js';
-            getLoginUrl = 'https://swarm-gateways.net/bzz:/getlogin.eth/';
+            getLoginApiUrl = 'https://getlogin.swarm-gateways.net/api/last.js';
+            getLoginUrl = 'https://getlogin.swarm-gateways.net/';
             redirectUrl = window.location.href
                 .replace(window.location.hash, '')
                 .replace(window.location.search, '');
