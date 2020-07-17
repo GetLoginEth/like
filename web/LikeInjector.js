@@ -17,14 +17,17 @@ class LikeInjector {
     allowAppUrl = null;
     appId = 3;
 
+    waitAccessTokenInterval = null;
+
     emptyHash = '0x000000000000000000000000000000000000000000000000000000';
     emptyWallet = '0x0000000000000000000000000000000000000000';
+    accessTokenKey = 'access_token';
 
     init() {
         let getLoginApiUrl = "https://getlogin.localhost:3000/api/last.js";
         let getLoginUrl = 'https://getlogin.localhost:3000/';
         let redirectUrl = 'https://localhost:1234/token.html';
-        let accessToken = localStorage.getItem('access_token');
+        let accessToken = localStorage.getItem(this.accessTokenKey);
         if (process.env.NODE_ENV === 'production') {
             getLoginApiUrl = 'https://getlogin.swarm-gateways.net/api/last.js';
             getLoginUrl = 'https://getlogin.swarm-gateways.net/';
@@ -96,8 +99,15 @@ class LikeInjector {
                 } else if (event === 'unlike' && this.onUnlike[id]) {
                     this._sendUnlike(id, data).then();
                 } else if (event === 'allowApp') {
-                    // todo after success login - update params in LikeModule about url allowed (check LS access_token or wait window close)
                     window.open(this.allowAppUrl);
+                    clearInterval(this.waitAccessTokenInterval);
+                    this.waitAccessTokenInterval = setInterval(_ => {
+                        if (localStorage.getItem(this.accessTokenKey)) {
+                            //this.isAppAllowed = true;
+                            //clearInterval(this.waitAccessTokenInterval);
+                            window.location.reload();
+                        }
+                    }, 500);
                 }
             }
         }, false);
