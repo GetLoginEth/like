@@ -40,11 +40,11 @@ class LikeModule {
             return;
         }
 
+        // todo check here e.origin
         console.log(e);
         const event = e.data.event;
         const data = e.data.data;
         if (event === 'lock-blockchain-actions') {
-            // todo move all code to onTxProgressChanged?
             if (Number(data.id) === this.id) {
                 if (this.onTxProgressChanged) {
                     this.onTxProgressChanged(true);
@@ -163,11 +163,6 @@ class LikeModule {
             this.setLikes(likes + 1, newIsLiked);
             this.onLike();
         }
-
-        // todo after tx complete - update actual likes count (can be changed while liked)
-        // todo block ui while tx not complete because tx replacement
-        // todo wait until mined, update actual like info
-
     }
 
     async updateLikeInfo() {

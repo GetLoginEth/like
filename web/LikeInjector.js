@@ -75,8 +75,7 @@ class LikeInjector {
 
         // subscribe to messages from child iframes
         window.addEventListener("message", (e) => {
-            // todo check is other apps can send here fake messages
-            // todo check origin?
+            // todo check here e.origin
             console.log(e.data);
             const id = e.data.id;
             const requestId = e.data.requestId;
