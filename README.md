@@ -61,3 +61,11 @@ Html example:
 <p>Like two here</p>
 <div id="like2"></div>
 ```
+
+### Auto deploy contracts
+
+```node ./smart-deploy/deploy.js```
+
+This command will compile the contracts, publish them on the rinkeby network, create an ABI file, and fill in the addresses of the contracts.
+
+Information about already published contracts is stored in ```./web/LikeLogicAbi.json``` and ```./web/LikeStorageAbi.json```
