@@ -11,6 +11,17 @@ You can try Chrome Extension to like any page: [Like Chrome Extension](https://g
 Example with integrated Like module: https://swarm-gateways.net/bzz:/[HASH]/example.html
 
 
+### General description
+
+Like module is a plug-in javascript that embeds an iframe with a like button for every element that can be like on the page.
+
+In addition to these iframes, an iframe getlogin is connected to the page to carry out operations (reading the number of likes and recording new ones).
+
+In addition to the fact that iframe getlogin helps to carry out operations with the blockchain, it is responsible for checking the correctness of the page like module.
+
+Attempts to carry out operations from unknown pages will be blocked. The correct pages can be configured on the getlogin management page.
+
+
 ### Integration
 Add code before footer. This code will be launched immediately after the login system initialization.
 
